@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Controle de Intervalos</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#1e3a5f"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Intervalos"/>
+  <link rel="apple-touch-icon" href="icon-192.png"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:'Segoe UI',system-ui,sans-serif;
+      background:#f0f2f5;
+      min-height:100vh;
+      display:flex;flex-direction:column;align-items:center;
+    }
+
+    /* ---- HEADER ---- */
+    .header{
+      width:100%;max-width:480px;
+      background:#1e3a5f;
+      padding:18px 20px 16px;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .header-left{display:flex;align-items:center;gap:10px;}
+    .header-icon{font-size:1.3rem;}
+    .header h1{color:#fff;font-size:1.15rem;font-weight:700;}
+    .btn-sair{
+      background:#f5c842;color:#1e3a5f;
+      border:none;border-radius:20px;
+      padding:7px 20px;font-size:.85rem;font-weight:700;
+      cursor:pointer;
+    }
+
+    /* ---- MAIN ---- */
+    .main{width:100%;max-width:480px;padding:16px 14px 100px;display:flex;flex-direction:column;gap:14px;}
+
+    /* ---- CARD ---- */
+    .card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 6px #0001;}
+
+    /* ---- ENTRADA ---- */
+    .entrada-header{
+      background:#e8edf5;
+      padding:12px 16px 8px;
+      display:flex;align-items:center;gap:8px;
+    }
+    .entrada-header span{font-size:.8rem;font-weight:600;color:#1e3a5f;text-transform:uppercase;letter-spacing:.5px;}
+    .entrada-body{padding:10px 16px 14px;}
+    .entrada-time-row{display:flex;align-items:center;gap:10px;}
+    input[type="time"]{
+      background:#1e3a5f;color:#fff;
+      border:none;border-radius:10px;
+      padding:10px 16px;font-size:1.6rem;font-weight:700;
+      outline:none;cursor:pointer;width:160px;
+    }
+    .btn-edit{
+      background:#e8edf5;border:none;border-radius:50%;
+      width:38px;height:38px;font-size:1rem;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      color:#1e3a5f;
+    }
+    .btn-calcular{
+      background:#1e3a5f;color:#fff;
+      border:none;border-radius:10px;
+      padding:10px 20px;font-size:.9rem;font-weight:700;
+      cursor:pointer;flex:1;
+    }
+    .btn-calcular:hover{opacity:.85;}
+    .entrada-hint{font-size:.75rem;color:#8899aa;margin-top:8px;}
+
+    /* ---- SECAO INTERVALOS ---- */
+    .sec-header{
+      background:#e8edf5;
+      padding:12px 16px;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .sec-header-left{display:flex;align-items:center;gap:8px;}
+    .sec-title{font-size:.85rem;font-weight:700;color:#1e3a5f;}
+    .almoco-toggle-wrap{display:flex;align-items:center;gap:8px;}
+    .almoco-toggle-label{font-size:.75rem;color:#445566;}
+    .toggle{
+      position:relative;width:46px;height:26px;
+    }
+    .toggle input{opacity:0;width:0;height:0;}
+    .toggle-slider{
+      position:absolute;inset:0;
+      background:#ccc;border-radius:26px;
+      transition:.3s;cursor:pointer;
+    }
+    .toggle-slider:before{
+      content:'';position:absolute;
+      width:20px;height:20px;left:3px;bottom:3px;
+      background:#fff;border-radius:50%;
+      transition:.3s;
+    }
+    .toggle input:checked + .toggle-slider{background:#2e7d52;}
+    .toggle input:checked + .toggle-slider:before{transform:translateX(20px);}
+
+    /* ---- LINHAS DE INTERVALO ---- */
+    .int-list{padding:4px 0;}
+    .int-row{
+      display:flex;align-items:center;
+      padding:13px 16px;
+      border-bottom:1px solid #f0f2f5;
+      gap:10px;
+      cursor:default;
+      transition:background .15s;
+    }
+    .int-row:last-child{border-bottom:none;}
+    .int-row.active-now{background:#fff8e1;}
+    .int-row.done{opacity:.55;}
+
+    .int-icon{font-size:1.1rem;width:24px;text-align:center;flex-shrink:0;}
+    .int-info{flex:1;}
+    .int-name{font-size:.88rem;font-weight:600;color:#1e3a5f;}
+    .int-times{font-size:.8rem;color:#667788;margin-top:1px;}
+
+    .int-badge{
+      font-size:.72rem;font-weight:700;
+      padding:4px 10px;border-radius:999px;
+      white-space:nowrap;
+    }
+    .badge-done   {background:#c6f0d4;color:#1a6e3a;}
+    .badge-active {background:#1e7a4a;color:#fff;}
+    .badge-future {background:#dde5f0;color:#445566;}
+    .badge-alert  {background:#e53e3e;color:#fff;}
+
+    /* Botão iniciar */
+    .btn-iniciar{
+      background:#1e3a5f;color:#fff;
+      border:none;border-radius:8px;
+      padding:6px 12px;font-size:.73rem;font-weight:700;
+      cursor:pointer;white-space:nowrap;
+    }
+    .btn-iniciar:hover{opacity:.85;}
+
+    /* ---- LINHAS DESCONTO / SAÍDA ---- */
+    .info-row{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 16px;border-top:1px solid #f0f2f5;
+    }
+    .info-row-label{display:flex;align-items:center;gap:8px;font-size:.88rem;font-weight:600;color:#1e3a5f;}
+    .info-row-value{font-size:.88rem;font-weight:700;color:#1e3a5f;}
+    .info-row.saida-row{background:#ffeaea;}
+    .info-row.saida-row .info-row-label{color:#c0392b;}
+    .info-row.saida-row .info-row-value{color:#c0392b;}
+
+    .alerta-banner{
+      background:#e53e3e;color:#fff;
+      padding:8px 16px;font-size:.82rem;font-weight:700;
+      display:none;
+    }
+
+    /* ---- NOTA ---- */
+    .nota{font-size:.78rem;color:#667788;padding:10px 16px 14px;border-top:1px solid #f0f2f5;}
+
+    /* ---- BTN OK ---- */
+    .btn-ok-wrap{
+      position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+      width:100%;max-width:480px;
+      padding:14px 16px;background:#f0f2f5;
+    }
+    .btn-ok{
+      width:100%;background:#2e7d52;color:#fff;
+      border:none;border-radius:14px;
+      padding:15px;font-size:1rem;font-weight:700;
+      cursor:pointer;
+    }
+    .btn-ok:hover{opacity:.88;}
+
+    /* ---- Countdown flutuante ---- */
+    #cd-bar{
+      background:#1e3a5f;color:#fff;
+      padding:8px 16px;text-align:center;
+      font-size:.8rem;display:none;
+      width:100%;max-width:480px;
+    }
+    #cd-bar strong{font-size:1rem;}
+
+    /* Toast */
+    #toast{
+      position:fixed;top:14px;left:50%;transform:translateX(-50%);
+      background:#1e3a5f;color:#fff;
+      padding:12px 22px;border-radius:12px;
+      font-size:.88rem;font-weight:600;
+      z-index:999;display:none;max-width:340px;text-align:center;
+      box-shadow:0 4px 16px #0003;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <span class="header-icon">🕐</span>
+    <h1>Controle de Intervalos</h1>
+  </div>
+  <button class="btn-sair" onclick="resetar()">Sair</button>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="cd-bar"></div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- CARD ENTRADA -->
+  <div class="card" id="card-entrada">
+    <div class="entrada-header">
+      <span>☰ Entrada</span>
+    </div>
+    <div class="entrada-body">
+      <div class="entrada-time-row">
+        <input type="time" id="entrada-input"/>
+        <button class="btn-calcular" onclick="calcular()">Calcular ▶</button>
+      </div>
+      <div class="entrada-hint">Cálculo automático dos horários a partir da entrada.</div>
+    </div>
+  </div>
+
+  <!-- CARD INTERVALOS -->
+  <div class="card" id="card-intervalos" style="display:none;">
+    <div class="sec-header">
+      <div class="sec-header-left">
+        <span>🕐</span>
+        <span class="sec-title">Intervalos</span>
+      </div>
+      <div class="almoco-toggle-wrap">
+        <span class="almoco-toggle-label">Almoço ativo</span>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-almoco" onchange="toggleAlmoco()"/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="int-list" id="int-list"></div>
+
+    <!-- Desconto / Saída -->
+    <div class="info-row" id="row-desconto">
+      <div class="info-row-label"><span>⏱</span> Desconto</div>
+      <div class="info-row-value" id="val-desconto">—</div>
+    </div>
+    <div class="alerta-banner" id="alerta-banner">⏰ ALERTA: Hora de sair!</div>
+    <div class="info-row saida-row" id="row-saida">
+      <div class="info-row-label"><span>⏰</span> Saída</div>
+      <div class="info-row-value" id="val-saida">—</div>
+    </div>
+
+    <div class="nota">
+      🍽️ Almoço: ative o toggle para marcar o intervalo atual como almoço (30 min).<br>
+      Clique em <strong>Iniciar</strong> quando sair para o intervalo.
+    </div>
+  </div>
+
+</div>
+
+<!-- BTN OK -->
+<div class="btn-ok-wrap" id="btn-ok-wrap" style="display:none;">
+  <button class="btn-ok" onclick="resetar()">↩ Recomeçar</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIGURAÇÕES
+   7 intervalos de 10 min a cada 50 min de trabalho.
+   O almoço pode ser ativado no intervalo que estiver em curso
+   (ou no próximo), tornando-o 30 min em vez de 10.
+   O último intervalo: bate ponto de saída ao sair, sem volta.
+   Saída real = após último bloco de 50 min + 10 min.
+============================================================ */
+
+  const WORK  = 50;
+  const SHORT = 10;
+  const LUNCH = 30;
+  const N     = 7;
+
+  let entradaMin   = 0;
+  let almocoIdx    = -1;  // qual intervalo é almoço
+  let breakStart   = {};  // { idx: Date.getTime() } quando clicou Iniciar
+  let ticker       = null;
+  let lastToastKey = '';
+
+  // Audio
+  let actx = null;
+  function ctx() { if(!actx) actx=new(window.AudioContext||window.webkitAudioContext)(); return actx; }
+  function beep(f,d,v=.4){
+    try{
+      const c=ctx(),o=c.createOscillator(),g=c.createGain();
+      o.connect(g);g.connect(c.destination);
+      o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);
+      o.start();o.stop(c.currentTime+d);
+    }catch(e){}
+  }
+  function playAlert(){ beep(880,.15); setTimeout(()=>beep(1100,.15),200); setTimeout(()=>beep(1320,.25),420); }
+
+  // Tempo
+  function nowMs()  { return Date.now(); }
+  function nowMin() { const d=new Date(); return d.getHours()*60+d.getMinutes(); }
+  function hhmm(m)  { m=((m%1440)+1440)%1440; return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
+  function fmtMs(ms){ // ms restantes → MM:SS ou HH:MM:SS
+    const s=Math.max(0,Math.ceil(ms/1000));
+    const h=Math.floor(s/3600),mn=Math.floor((s%3600)/60),sc=s%60;
+    if(h) return `${h}:${String(mn).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
+    return `${String(mn).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
+  }
+  function minToMs(m){ return m*60*1000; }
+
+  // Gera lista de intervalos com horários planejados
+  function makeIntervals(entMin, almocoI) {
+    const list=[];
+    let c=entMin;
+    for(let i=0;i<N;i++){
+      c+=WORK;
+      const isLast  = i===N-1;
+      const isAlmoco= i===almocoI;
+      const dur     = isAlmoco?LUNCH:SHORT;
+      list.push({ idx:i, startMin:c, endMin: isLast?c+SHORT:c+dur, dur, isLast, isAlmoco });
+    }
+    return list;
+  }
+
+  // Saída planejada = endMin do último intervalo
+  function saidaMin(intervals){ return intervals[N-1].endMin; }
+
+  // Desconto = soma de todos os intervalos (em minutos)
+  function descontoMin(intervals){
+    return intervals.reduce((acc,iv)=>acc+iv.dur,0);
+  }
+
+  let intervals=[];
+
+  function calcular(){
+    const val=document.getElementById('entrada-input').value;
+    if(!val){alert('Informe o horário de entrada!');return;}
+    const[h,m]=val.split(':').map(Number);
+    entradaMin=h*60+m;
+    almocoIdx=-1;
+    breakStart={};
+    intervals=makeIntervals(entradaMin,-1);
+    document.getElementById('toggle-almoco').checked=false;
+    ctx(); // unlock audio
+    document.getElementById('card-intervalos').style.display='';
+    document.getElementById('btn-ok-wrap').style.display='';
+    document.getElementById('cd-bar').style.display='';
+    renderAll();
+    if(ticker) clearInterval(ticker);
+    ticker=setInterval(renderAll,1000);
+  }
+
+  function toggleAlmoco(){
+    const checked=document.getElementById('toggle-almoco').checked;
+    if(!checked){ almocoIdx=-1; }
+    else {
+      // Marca o intervalo atual ou o próximo
+      const now=nowMin();
+      let target=-1;
+      for(const iv of intervals){
+        if(iv.isLast) continue;
+        // em andamento ou próximo a ser iniciado
+        if(breakStart[iv.idx]!==undefined || iv.startMin>=now){
+          target=iv.idx; break;
+        }
+      }
+      if(target===-1){
+        // pega o primeiro que ainda não passou
+        for(const iv of intervals){ if(!iv.isLast && iv.startMin>=now){ target=iv.idx; break; } }
+      }
+      if(target===-1){
+        document.getElementById('toggle-almoco').checked=false;
+        toast('Nenhum intervalo disponível para marcar como almoço.',4000);
+        return;
+      }
+      almocoIdx=target;
+    }
+    intervals=makeIntervals(entradaMin, almocoIdx);
+    renderAll();
+  }
+
+  function iniciar(idx){
+    breakStart[idx]=nowMs();
+    renderAll();
+    toast(`⏳ Intervalo ${idx+1} iniciado!`,3000);
+  }
+
+  function renderAll(){
+    const now=nowMin();
+    intervals=makeIntervals(entradaMin,almocoIdx);
+    renderList(now);
+    renderInfoRows(now);
+    renderCountdown(now);
+    checkAlerts(now);
+  }
+
+  function renderList(now){
+    const list=document.getElementById('int-list');
+    list.innerHTML='';
+
+    intervals.forEach(iv=>{
+      const started  = breakStart[iv.idx]!==undefined;
+      const durMs    = iv.dur*60*1000;
+      const remMs    = started ? (breakStart[iv.idx]+durMs - nowMs()) : null;
+      const running  = started && remMs!==null && remMs>0;
+      const doneBreak= started && remMs!==null && remMs<=0;
+      const upcoming = !started && iv.startMin>now;
+      const due      = !started && iv.startMin<=now; // chegou a hora, não iniciou
+
+      const row=document.createElement('div');
+      row.className='int-row'+(running?' active-now':'')+(doneBreak?' done':'');
+
+      // Ícone
+      const icon=document.createElement('div');
+      icon.className='int-icon';
+      icon.textContent = iv.isAlmoco ? '🍽️' : (doneBreak ? '✅' : (running ? '⏳' : '🔔'));
+
+      // Info
+      const info=document.createElement('div');
+      info.className='int-info';
+      const name=document.createElement('div');
+      name.className='int-name';
+      name.textContent = iv.isLast
+        ? `${iv.idx+1}° Intervalo (último)`
+        : iv.isAlmoco
+          ? 'Almoço'
+          : `${iv.idx+1}° Intervalo`;
+      info.appendChild(name);
+
+      // Horários
+      const times=document.createElement('div');
+      times.className='int-times';
+      // Se iniciado, mostrar horário real de início
+      let startDisplay=hhmm(iv.startMin);
+      if(started){
+        const d=new Date(breakStart[iv.idx]);
+        startDisplay=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+      }
+      const endRealMs = started ? breakStart[iv.idx]+durMs : null;
+      let endDisplay=hhmm(iv.endMin);
+      if(endRealMs){
+        const d=new Date(endRealMs);
+        endDisplay=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+      }
+      times.textContent=`${startDisplay} – ${endDisplay}`;
+      info.appendChild(times);
+
+      // Badge / botão
+      const right=document.createElement('div');
+      if(iv.isLast && iv.startMin<=now){
+        // Último intervalo chegou → só mostra saída
+        const b=document.createElement('div');
+        b.className='int-badge badge-alert';
+        b.textContent='🚪 Sair!';
+        right.appendChild(b);
+      } else if(doneBreak){
+        const b=document.createElement('div');
+        b.className='int-badge badge-done';
+        b.textContent='✅ Concluído';
+        right.appendChild(b);
+      } else if(running){
+        const b=document.createElement('div');
+        b.className='int-badge badge-active';
+        b.textContent=fmtMs(remMs);
+        right.appendChild(b);
+      } else if(due && !iv.isLast){
+        // Chegou a hora — mostrar botão Iniciar
+        const btn=document.createElement('button');
+        btn.className='btn-iniciar';
+        btn.textContent='▶ Iniciar';
+        btn.onclick=()=>iniciar(iv.idx);
+        right.appendChild(btn);
+      } else {
+        // Futuro
+        const used = started?`${iv.dur}/${iv.dur}`:`0/${iv.dur}`;
+        const b=document.createElement('div');
+        b.className='int-badge badge-future';
+        b.textContent=used+' min';
+        right.appendChild(b);
+      }
+
+      row.appendChild(icon);
+      row.appendChild(info);
+      row.appendChild(right);
+      list.appendChild(row);
+    });
+  }
+
+  function renderInfoRows(now){
+    const desc=descontoMin(intervals);
+    document.getElementById('val-desconto').textContent=hhmm(saidaMin(intervals)-desc)+'  →  -'+desc+' min';
+    document.getElementById('val-saida').textContent=hhmm(saidaMin(intervals));
+
+    // Alerta de saída
+    const saida=saidaMin(intervals);
+    const banner=document.getElementById('alerta-banner');
+    if(now>=saida){ banner.style.display='block'; }
+    else           { banner.style.display='none';  }
+  }
+
+  function renderCountdown(now){
+    const bar=document.getElementById('cd-bar');
+    const saida=saidaMin(intervals);
+    if(now>=saida){ bar.innerHTML='🎉 <strong>Hora de ir embora!</strong> Bata o ponto final.'; return; }
+
+    // Intervalo em andamento?
+    let running=null;
+    for(const iv of intervals){
+      if(breakStart[iv.idx]===undefined) continue;
+      const remMs=breakStart[iv.idx]+iv.dur*60*1000-nowMs();
+      if(remMs>0){ running={iv,remMs}; break; }
+    }
+
+    if(running){
+      const{iv,remMs}=running;
+      bar.innerHTML=`⏳ ${iv.isAlmoco?'Almoço':'Intervalo '+( iv.idx+1)}: <strong>${fmtMs(remMs)}</strong> restantes`;
+      return;
+    }
+
+    // Próximo evento
+    let next=null;
+    for(const iv of intervals){
+      if(breakStart[iv.idx]!==undefined) continue;
+      if(iv.startMin>now){ next=iv; break; }
+    }
+    if(next){
+      const diff=(next.startMin-now);
+      bar.innerHTML=`🔔 Próximo intervalo em <strong>${diff} min</strong> (${hhmm(next.startMin)})`;
+    } else {
+      bar.innerHTML=`⏰ Saída prevista: <strong>${hhmm(saida)}</strong>`;
+    }
+  }
+
+  let lastAlertKey='';
+  function checkAlerts(now){
+    // Intervalo chegou (dentro de 1 min)
+    for(const iv of intervals){
+      if(breakStart[iv.idx]!==undefined) continue;
+      const diff=iv.startMin-now;
+      if(diff>=0&&diff<=1){
+        const key='start_'+iv.idx;
+        if(key!==lastAlertKey){
+          lastAlertKey=key;
+          playAlert();
+          const msg=iv.isLast
+            ?'⏰ Último intervalo! Bata o ponto de SAÍDA agora.'
+            :iv.isAlmoco
+              ?'🍽️ Hora do almoço! Clique em Iniciar quando sair.'
+              :`🔔 Intervalo ${iv.idx+1}! Clique em Iniciar quando sair.`;
+          toast(msg,8000);
+        }
+      }
+    }
+    // Fim de intervalo em andamento
+    for(const iv of intervals){
+      if(breakStart[iv.idx]===undefined) continue;
+      const remMs=breakStart[iv.idx]+iv.dur*60*1000-nowMs();
+      if(remMs<=0&&remMs>-5000){
+        const key='end_'+iv.idx;
+        if(key!==lastAlertKey){
+          lastAlertKey=key;
+          playAlert();
+          toast(iv.isAlmoco?'▶️ Almoço encerrado! Hora de voltar.':`▶️ Intervalo ${iv.idx+1} encerrado! Hora de voltar.`,8000);
+        }
+      }
+    }
+    // Saída
+    const saida=saidaMin(intervals);
+    if(now===saida&&'saida'!==lastAlertKey){
+      lastAlertKey='saida';
+      playAlert();
+      toast('🎉 Hora de ir embora! Bata o ponto final.',10000);
+    }
+  }
+
+  function resetar(){
+    if(ticker) clearInterval(ticker);
+    entradaMin=0;almocoIdx=-1;breakStart={};intervals=[];lastAlertKey='';
+    document.getElementById('card-intervalos').style.display='none';
+    document.getElementById('btn-ok-wrap').style.display='none';
+    document.getElementById('cd-bar').style.display='none';
+    document.getElementById('entrada-input').value='';
+    document.getElementById('toggle-almoco').checked=false;
+  }
+
+  let toastTimer=null;
+  function toast(msg,dur=4000){
+    const t=document.getElementById('toast');
+    t.textContent=msg;t.style.display='block';
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>t.style.display='none',dur);
+  }
+
+  window.onload=()=>{
+    const d=new Date();
+    document.getElementById('entrada-input').value=
+      String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  };
+</script>
+</body>
+</html>
