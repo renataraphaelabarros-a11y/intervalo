@@ -13,6 +13,7 @@
   <meta name="apple-mobile-web-app-title" content="Intervalos"/>
   <link rel="apple-touch-icon" href="icon-192.png"/>
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
+
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{
@@ -22,203 +23,153 @@
       display:flex;flex-direction:column;align-items:center;
     }
 
-    /* ---- HEADER ---- */
+    /* HEADER */
     .header{
       width:100%;max-width:480px;
       background:#1e3a5f;
       padding:18px 20px 16px;
       display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;z-index:10;
     }
     .header-left{display:flex;align-items:center;gap:10px;}
-    .header-icon{font-size:1.3rem;}
-    .header h1{color:#fff;font-size:1.15rem;font-weight:700;}
+    .header h1{color:#fff;font-size:1.1rem;font-weight:700;}
     .btn-sair{
       background:#f5c842;color:#1e3a5f;
       border:none;border-radius:20px;
-      padding:7px 20px;font-size:.85rem;font-weight:700;
-      cursor:pointer;
+      padding:7px 18px;font-size:.82rem;font-weight:700;cursor:pointer;
     }
 
-    /* ---- MAIN ---- */
-    .main{width:100%;max-width:480px;padding:16px 14px 100px;display:flex;flex-direction:column;gap:14px;}
-
-    /* ---- CARD ---- */
-    .card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 6px #0001;}
-
-    /* ---- ENTRADA ---- */
-    .entrada-header{
-      background:#e8edf5;
-      padding:12px 16px 8px;
-      display:flex;align-items:center;gap:8px;
-    }
-    .entrada-header span{font-size:.8rem;font-weight:600;color:#1e3a5f;text-transform:uppercase;letter-spacing:.5px;}
-    .entrada-body{padding:10px 16px 14px;}
-    .entrada-time-row{display:flex;align-items:center;gap:10px;}
-    input[type="time"]{
+    /* COUNTDOWN BAR */
+    #cd-bar{
+      width:100%;max-width:480px;
       background:#1e3a5f;color:#fff;
-      border:none;border-radius:10px;
-      padding:10px 16px;font-size:1.6rem;font-weight:700;
-      outline:none;cursor:pointer;width:160px;
+      padding:9px 18px;font-size:.82rem;text-align:center;
+      display:none;border-bottom:2px solid #f5c842;
     }
-    .btn-edit{
-      background:#e8edf5;border:none;border-radius:50%;
-      width:38px;height:38px;font-size:1rem;
-      cursor:pointer;display:flex;align-items:center;justify-content:center;
-      color:#1e3a5f;
+    #cd-bar strong{font-size:.95rem;color:#f5c842;}
+
+    /* MAIN */
+    .main{width:100%;max-width:480px;padding:14px 12px 100px;display:flex;flex-direction:column;gap:12px;}
+
+    /* CARD */
+    .card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 5px #0001;}
+
+    /* SECAO HEADER */
+    .sec-header{
+      background:#dde4f0;padding:11px 16px;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .sec-header-left{display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:700;color:#1e3a5f;}
+
+    /* ENTRADA */
+    .entrada-body{padding:12px 16px 14px;}
+    .entrada-row{display:flex;gap:10px;align-items:center;}
+    input[type="time"]{
+      background:#1e3a5f;color:#fff;border:none;border-radius:10px;
+      padding:10px 14px;font-size:1.5rem;font-weight:700;
+      outline:none;cursor:pointer;width:150px;
     }
     .btn-calcular{
-      background:#1e3a5f;color:#fff;
-      border:none;border-radius:10px;
-      padding:10px 20px;font-size:.9rem;font-weight:700;
-      cursor:pointer;flex:1;
+      flex:1;background:#1e3a5f;color:#fff;border:none;border-radius:10px;
+      padding:12px;font-size:.9rem;font-weight:700;cursor:pointer;
     }
     .btn-calcular:hover{opacity:.85;}
-    .entrada-hint{font-size:.75rem;color:#8899aa;margin-top:8px;}
+    .entrada-hint{font-size:.72rem;color:#8899aa;margin-top:8px;}
 
-    /* ---- SECAO INTERVALOS ---- */
-    .sec-header{
-      background:#e8edf5;
-      padding:12px 16px;
-      display:flex;align-items:center;justify-content:space-between;
-    }
-    .sec-header-left{display:flex;align-items:center;gap:8px;}
-    .sec-title{font-size:.85rem;font-weight:700;color:#1e3a5f;}
-    .almoco-toggle-wrap{display:flex;align-items:center;gap:8px;}
-    .almoco-toggle-label{font-size:.75rem;color:#445566;}
-    .toggle{
-      position:relative;width:46px;height:26px;
-    }
-    .toggle input{opacity:0;width:0;height:0;}
-    .toggle-slider{
-      position:absolute;inset:0;
-      background:#ccc;border-radius:26px;
-      transition:.3s;cursor:pointer;
-    }
-    .toggle-slider:before{
-      content:'';position:absolute;
-      width:20px;height:20px;left:3px;bottom:3px;
-      background:#fff;border-radius:50%;
-      transition:.3s;
-    }
-    .toggle input:checked + .toggle-slider{background:#2e7d52;}
-    .toggle input:checked + .toggle-slider:before{transform:translateX(20px);}
-
-    /* ---- LINHAS DE INTERVALO ---- */
-    .int-list{padding:4px 0;}
+    /* LISTA */
+    .int-list{padding:2px 0;}
     .int-row{
-      display:flex;align-items:center;
-      padding:13px 16px;
-      border-bottom:1px solid #f0f2f5;
-      gap:10px;
-      cursor:default;
-      transition:background .15s;
+      display:flex;align-items:flex-start;
+      padding:12px 16px;border-bottom:1px solid #f0f2f5;gap:10px;
     }
     .int-row:last-child{border-bottom:none;}
-    .int-row.active-now{background:#fff8e1;}
-    .int-row.done{opacity:.55;}
+    .int-row.row-done{opacity:.5;}
+    .int-row.row-now{background:#fff8e1;}
+    .int-row.row-running{background:#e8f5e9;}
 
-    .int-icon{font-size:1.1rem;width:24px;text-align:center;flex-shrink:0;}
-    .int-info{flex:1;}
-    .int-name{font-size:.88rem;font-weight:600;color:#1e3a5f;}
-    .int-times{font-size:.8rem;color:#667788;margin-top:1px;}
+    .int-icon{font-size:1.05rem;width:22px;text-align:center;flex-shrink:0;padding-top:2px;}
+    .int-info{flex:1;min-width:0;}
+    .int-name{font-size:.86rem;font-weight:600;color:#1e3a5f;}
+    .int-times{font-size:.76rem;color:#667788;margin-top:2px;}
 
-    .int-badge{
-      font-size:.72rem;font-weight:700;
-      padding:4px 10px;border-radius:999px;
-      white-space:nowrap;
+    .badge{
+      font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap;flex-shrink:0;margin-top:2px;
     }
-    .badge-done   {background:#c6f0d4;color:#1a6e3a;}
-    .badge-active {background:#1e7a4a;color:#fff;}
-    .badge-future {background:#dde5f0;color:#445566;}
-    .badge-alert  {background:#e53e3e;color:#fff;}
+    .b-done   {background:#c6f0d4;color:#1a6e3a;}
+    .b-running{background:#2e7d52;color:#fff;}
+    .b-due    {background:#e53e3e;color:#fff;}
+    .b-future {background:#dde5f0;color:#445566;}
 
-    /* Botão iniciar */
-    .btn-iniciar{
-      background:#1e3a5f;color:#fff;
-      border:none;border-radius:8px;
-      padding:6px 12px;font-size:.73rem;font-weight:700;
-      cursor:pointer;white-space:nowrap;
-    }
+    /* Ações */
+    .int-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+    .btn-sm{border:none;border-radius:8px;padding:6px 12px;font-size:.72rem;font-weight:700;cursor:pointer;}
+    .btn-iniciar{background:#1e3a5f;color:#fff;}
     .btn-iniciar:hover{opacity:.85;}
+    .btn-ajustar{background:#f0f2f5;color:#1e3a5f;border:1px solid #c0ccd8;}
+    .btn-ajustar:hover{background:#dde4f0;}
+    .btn-almoco-mark{background:#fff3cd;color:#856404;border:1px solid #ffc107;font-size:.7rem;}
+    .btn-almoco-mark.ativo{background:#ffc107;color:#1e3a5f;}
 
-    /* ---- LINHAS DESCONTO / SAÍDA ---- */
-    .info-row{
+    /* Modal */
+    .modal-overlay{display:none;position:fixed;inset:0;background:#0008;z-index:100;align-items:center;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:#fff;border-radius:18px;padding:24px 20px;width:88%;max-width:340px;box-shadow:0 8px 32px #0003;}
+    .modal h3{font-size:1rem;color:#1e3a5f;margin-bottom:4px;}
+    .modal p{font-size:.78rem;color:#667788;margin-bottom:14px;}
+    .modal input[type="time"]{
+      background:#f0f2f5;color:#1e3a5f;border:2px solid #dde4f0;border-radius:10px;
+      padding:10px 14px;font-size:1.3rem;font-weight:700;outline:none;width:100%;margin-bottom:14px;
+    }
+    .modal input[type="time"]:focus{border-color:#1e3a5f;}
+    .modal-btns{display:flex;gap:10px;}
+    .btn-confirm{flex:1;background:#1e3a5f;color:#fff;border:none;border-radius:10px;padding:11px;font-size:.88rem;font-weight:700;cursor:pointer;}
+    .btn-cancel {flex:1;background:#f0f2f5;color:#445566;border:none;border-radius:10px;padding:11px;font-size:.88rem;font-weight:700;cursor:pointer;}
+
+    /* Saída */
+    .saida-row{
       display:flex;align-items:center;justify-content:space-between;
-      padding:12px 16px;border-top:1px solid #f0f2f5;
+      padding:13px 16px;border-top:2px solid #f0f2f5;
     }
-    .info-row-label{display:flex;align-items:center;gap:8px;font-size:.88rem;font-weight:600;color:#1e3a5f;}
-    .info-row-value{font-size:.88rem;font-weight:700;color:#1e3a5f;}
-    .info-row.saida-row{background:#ffeaea;}
-    .info-row.saida-row .info-row-label{color:#c0392b;}
-    .info-row.saida-row .info-row-value{color:#c0392b;}
+    .saida-label{display:flex;align-items:center;gap:8px;font-size:.88rem;font-weight:700;color:#1e3a5f;}
+    .saida-label.alert{color:#c0392b;}
+    .saida-value{font-size:1rem;font-weight:800;color:#1e3a5f;}
+    .saida-value.alert{color:#c0392b;}
+    .alerta-banner{background:#e53e3e;color:#fff;padding:8px 16px;font-size:.82rem;font-weight:700;display:none;text-align:center;}
 
-    .alerta-banner{
-      background:#e53e3e;color:#fff;
-      padding:8px 16px;font-size:.82rem;font-weight:700;
-      display:none;
-    }
+    /* Nota */
+    .nota{font-size:.72rem;color:#8899aa;padding:8px 16px 12px;border-top:1px solid #f0f2f5;line-height:1.6;}
 
-    /* ---- NOTA ---- */
-    .nota{font-size:.78rem;color:#667788;padding:10px 16px 14px;border-top:1px solid #f0f2f5;}
-
-    /* ---- BTN OK ---- */
-    .btn-ok-wrap{
-      position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-      width:100%;max-width:480px;
-      padding:14px 16px;background:#f0f2f5;
-    }
-    .btn-ok{
-      width:100%;background:#2e7d52;color:#fff;
-      border:none;border-radius:14px;
-      padding:15px;font-size:1rem;font-weight:700;
-      cursor:pointer;
-    }
-    .btn-ok:hover{opacity:.88;}
-
-    /* ---- Countdown flutuante ---- */
-    #cd-bar{
-      background:#1e3a5f;color:#fff;
-      padding:8px 16px;text-align:center;
-      font-size:.8rem;display:none;
-      width:100%;max-width:480px;
-    }
-    #cd-bar strong{font-size:1rem;}
+    /* Botão fixo */
+    .fixed-bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:12px 14px;background:#f0f2f5;}
+    .btn-ok{width:100%;background:#2e7d52;color:#fff;border:none;border-radius:14px;padding:14px;font-size:.95rem;font-weight:700;cursor:pointer;}
 
     /* Toast */
     #toast{
       position:fixed;top:14px;left:50%;transform:translateX(-50%);
-      background:#1e3a5f;color:#fff;
-      padding:12px 22px;border-radius:12px;
-      font-size:.88rem;font-weight:600;
-      z-index:999;display:none;max-width:340px;text-align:center;
-      box-shadow:0 4px 16px #0003;
+      background:#1e3a5f;color:#fff;padding:12px 20px;border-radius:12px;
+      font-size:.85rem;font-weight:600;z-index:200;display:none;
+      max-width:340px;text-align:center;box-shadow:0 4px 16px #0004;
     }
   </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
-  <div class="header-left">
-    <span class="header-icon">🕐</span>
-    <h1>Controle de Intervalos</h1>
-  </div>
+  <div class="header-left">🕐 <h1>Controle de Intervalos</h1></div>
   <button class="btn-sair" onclick="resetar()">Sair</button>
 </div>
 
-<!-- COUNTDOWN -->
 <div id="cd-bar"></div>
 
-<!-- MAIN -->
 <div class="main">
 
-  <!-- CARD ENTRADA -->
+  <!-- ENTRADA -->
   <div class="card" id="card-entrada">
-    <div class="entrada-header">
-      <span>☰ Entrada</span>
+    <div class="sec-header">
+      <div class="sec-header-left">☰ Entrada</div>
     </div>
     <div class="entrada-body">
-      <div class="entrada-time-row">
+      <div class="entrada-row">
         <input type="time" id="entrada-input"/>
         <button class="btn-calcular" onclick="calcular()">Calcular ▶</button>
       </div>
@@ -226,378 +177,467 @@
     </div>
   </div>
 
-  <!-- CARD INTERVALOS -->
+  <!-- INTERVALOS -->
   <div class="card" id="card-intervalos" style="display:none;">
     <div class="sec-header">
-      <div class="sec-header-left">
-        <span>🕐</span>
-        <span class="sec-title">Intervalos</span>
-      </div>
-      <div class="almoco-toggle-wrap">
-        <span class="almoco-toggle-label">Almoço ativo</span>
-        <label class="toggle">
-          <input type="checkbox" id="toggle-almoco" onchange="toggleAlmoco()"/>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
+      <div class="sec-header-left">🕐 Intervalos</div>
     </div>
 
     <div class="int-list" id="int-list"></div>
 
-    <!-- Desconto / Saída -->
-    <div class="info-row" id="row-desconto">
-      <div class="info-row-label"><span>⏱</span> Desconto</div>
-      <div class="info-row-value" id="val-desconto">—</div>
-    </div>
-    <div class="alerta-banner" id="alerta-banner">⏰ ALERTA: Hora de sair!</div>
-    <div class="info-row saida-row" id="row-saida">
-      <div class="info-row-label"><span>⏰</span> Saída</div>
-      <div class="info-row-value" id="val-saida">—</div>
+    <div id="alerta-banner" class="alerta-banner">⏰ ALERTA: Hora de sair!</div>
+
+    <div class="saida-row">
+      <div class="saida-label" id="saida-label">⏰ Saída prevista</div>
+      <div class="saida-value" id="saida-value">--:--</div>
     </div>
 
     <div class="nota">
-      🍽️ Almoço: ative o toggle para marcar o intervalo atual como almoço (30 min).<br>
-      Clique em <strong>Iniciar</strong> quando sair para o intervalo.
+      💡 Clique <strong>Iniciar</strong> ao sair para o intervalo.<br>
+      🍽️ Marque <strong>Almoço</strong> em qualquer intervalo para 30 min.<br>
+      🕐 Use <strong>Ajustar</strong> se não saiu na hora exata.
     </div>
   </div>
 
 </div>
 
-<!-- BTN OK -->
-<div class="btn-ok-wrap" id="btn-ok-wrap" style="display:none;">
+<div class="fixed-bottom" id="fixed-bottom" style="display:none;">
   <button class="btn-ok" onclick="resetar()">↩ Recomeçar</button>
+</div>
+
+<!-- Modal ajuste -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>Ajustar horário do intervalo</h3>
+    <p id="modal-desc">Informe o horário real que você saiu:</p>
+    <input type="time" id="modal-time"/>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="confirmAjuste()">Confirmar</button>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
-/* ============================================================
-   CONFIGURAÇÕES
-   7 intervalos de 10 min a cada 50 min de trabalho.
-   O almoço pode ser ativado no intervalo que estiver em curso
-   (ou no próximo), tornando-o 30 min em vez de 10.
-   O último intervalo: bate ponto de saída ao sair, sem volta.
-   Saída real = após último bloco de 50 min + 10 min.
-============================================================ */
+/*
+  LÓGICA (baseada na planilha SIPON):
+  - 5 blocos de 50 min de trabalho
+  - 5 intervalos de 10 min cada (o último é a saída)
+  - O ALMOÇO pode ser marcado em QUALQUER intervalo (menos o último) → vira 30 min
+  - Sequência: Entrada → 50 trabalho → 10 int → 50 trabalho → 10 int → ...
+    O próximo bloco começa APÓS o fim do intervalo anterior.
+  - O último intervalo: você bate ponto de saída e vai embora (não bate volta).
+  - Saída = início do último intervalo + 10 min
+  - Cada intervalo só começa a contar quando você clica "Iniciar"
+  - Pode ajustar o horário de início manualmente
+*/
 
   const WORK  = 50;
   const SHORT = 10;
   const LUNCH = 30;
-  const N     = 7;
+  const N     = 5;
 
-  let entradaMin   = 0;
-  let almocoIdx    = -1;  // qual intervalo é almoço
-  let breakStart   = {};  // { idx: Date.getTime() } quando clicou Iniciar
-  let ticker       = null;
-  let lastToastKey = '';
+  let entradaMin = 0;
+  let almocoIdx  = -1;   // qual intervalo (0-based) é almoço; -1 = nenhum
+  let breakStart = {};   // { idx: timestamp ms } hora real de início do intervalo
+  let ticker     = null;
+  let lastKey    = '';
+  let modalIdx   = -1;
 
-  // Audio
+  // --- Audio ---
   let actx = null;
-  function ctx() { if(!actx) actx=new(window.AudioContext||window.webkitAudioContext)(); return actx; }
+  function getCtx(){ if(!actx) actx=new(window.AudioContext||window.webkitAudioContext)(); return actx; }
   function beep(f,d,v=.4){
     try{
-      const c=ctx(),o=c.createOscillator(),g=c.createGain();
+      const c=getCtx(),o=c.createOscillator(),g=c.createGain();
       o.connect(g);g.connect(c.destination);
-      o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime);
+      o.frequency.value=f;
+      g.gain.setValueAtTime(v,c.currentTime);
       g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);
       o.start();o.stop(c.currentTime+d);
     }catch(e){}
   }
-  function playAlert(){ beep(880,.15); setTimeout(()=>beep(1100,.15),200); setTimeout(()=>beep(1320,.25),420); }
+  function playAlert(){ beep(880,.15); setTimeout(()=>beep(1100,.15),220); setTimeout(()=>beep(1320,.3),450); }
+  function playDone() { beep(660,.1); setTimeout(()=>beep(880,.1),150); setTimeout(()=>beep(1100,.25),300); }
 
-  // Tempo
-  function nowMs()  { return Date.now(); }
-  function nowMin() { const d=new Date(); return d.getHours()*60+d.getMinutes(); }
-  function hhmm(m)  { m=((m%1440)+1440)%1440; return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
-  function fmtMs(ms){ // ms restantes → MM:SS ou HH:MM:SS
+  // --- Tempo ---
+  function nowMin(){ const d=new Date(); return d.getHours()*60+d.getMinutes(); }
+  function nowMs() { return Date.now(); }
+  function hhmm(m) { m=((m%1440)+1440)%1440; return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
+  function msToHHMM(ms){ const d=new Date(ms); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+  function fmtMs(ms){
     const s=Math.max(0,Math.ceil(ms/1000));
-    const h=Math.floor(s/3600),mn=Math.floor((s%3600)/60),sc=s%60;
-    if(h) return `${h}:${String(mn).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
-    return `${String(mn).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
+    const m=Math.floor(s/60),sc=s%60;
+    return String(m).padStart(2,'0')+':'+String(sc).padStart(2,'0');
   }
-  function minToMs(m){ return m*60*1000; }
+  function hhmmToMin(str){ const[h,m]=str.split(':').map(Number); return h*60+m; }
+  function todayMs(min){ const d=new Date(); d.setHours(Math.floor(min/60),min%60,0,0); return d.getTime(); }
 
-  // Gera lista de intervalos com horários planejados
-  function makeIntervals(entMin, almocoI) {
-    const list=[];
-    let c=entMin;
+  /*
+    Gera schedule DINÂMICO:
+    - Para cada intervalo, o horário planejado depende de quando o anterior terminou.
+    - Se um intervalo foi iniciado manualmente (breakStart[i] existe), o próximo bloco
+      começa a partir do fim REAL desse intervalo.
+    - Se ainda não foi iniciado, usa o horário planejado.
+  */
+  function makeSchedule(){
+    const rows=[];
+    // cursor em minutos (para planejamento) e em ms (para real)
+    let cursorMin = entradaMin;
+    let cursorMs  = todayMs(entradaMin);
+
     for(let i=0;i<N;i++){
-      c+=WORK;
-      const isLast  = i===N-1;
-      const isAlmoco= i===almocoI;
-      const dur     = isAlmoco?LUNCH:SHORT;
-      list.push({ idx:i, startMin:c, endMin: isLast?c+SHORT:c+dur, dur, isLast, isAlmoco });
+      const isLast   = i===N-1;
+      const isAlmoco = i===almocoIdx;
+      const dur      = isLast ? SHORT : (isAlmoco ? LUNCH : SHORT);
+
+      // Início do intervalo planejado
+      const bStartMin = cursorMin + WORK;
+      const bStartMs  = cursorMs  + WORK*60*1000;
+
+      // Fim do intervalo
+      const bEndMin = bStartMin + dur;
+
+      // Fim real (se iniciado)
+      let bEndMs = null;
+      if(breakStart[i] !== undefined){
+        bEndMs = breakStart[i] + dur*60*1000;
+      }
+
+      rows.push({ idx:i, bStartMin, bStartMs, bEndMin, bEndMs, dur, isLast, isAlmoco });
+
+      // Próximo cursor: usa fim real se disponível, senão planejado
+      if(bEndMs !== null){
+        cursorMs  = bEndMs;
+        cursorMin = bEndMin + Math.round((bEndMs - (todayMs(entradaMin) + (bEndMin - entradaMin)*60*1000)) / 60000);
+        // simplificado: recalcula cursor baseado no fim real
+        cursorMin = Math.round(bEndMs / 60000) - Math.floor(nowMs()/60000 - nowMin());
+        // mais simples: apenas propaga a diferença
+        const diffMs = bEndMs - bStartMs;
+        cursorMin = bStartMin + dur + Math.round((diffMs - dur*60*1000)/60000);
+        cursorMs  = bEndMs;
+      } else {
+        cursorMin = bEndMin;
+        cursorMs  = bStartMs + dur*60*1000;
+      }
     }
-    return list;
+    return rows;
   }
 
-  // Saída planejada = endMin do último intervalo
-  function saidaMin(intervals){ return intervals[N-1].endMin; }
+  // Versão simplificada e correta do makeSchedule
+  function buildSchedule(){
+    const rows=[];
+    // Usamos timestamps reais ao longo de todo o dia
+    const baseMs = todayMs(entradaMin);
+    let cursorMs = baseMs;
 
-  // Desconto = soma de todos os intervalos (em minutos)
-  function descontoMin(intervals){
-    return intervals.reduce((acc,iv)=>acc+iv.dur,0);
+    for(let i=0;i<N;i++){
+      const isLast   = i===N-1;
+      const isAlmoco = i===almocoIdx;
+      const dur      = isLast ? SHORT : (isAlmoco ? LUNCH : SHORT);
+
+      const bStartMs_plan = cursorMs + WORK*60*1000;    // planejado
+      const bEndMs_plan   = bStartMs_plan + dur*60*1000;
+
+      // Horário real de início (se iniciado)
+      const bStartMs_real = breakStart[i] !== undefined ? breakStart[i] : null;
+      const bEndMs_real   = bStartMs_real !== null ? bStartMs_real + dur*60*1000 : null;
+
+      rows.push({
+        idx: i,
+        bStartMs_plan,
+        bEndMs_plan,
+        bStartMs_real,
+        bEndMs_real,
+        dur, isLast, isAlmoco
+      });
+
+      // Próximo bloco começa após o fim real (se disponível) ou planejado
+      cursorMs = bEndMs_real !== null ? bEndMs_real : bEndMs_plan;
+    }
+    return rows;
   }
 
-  let intervals=[];
+  let schedule=[];
 
   function calcular(){
     const val=document.getElementById('entrada-input').value;
-    if(!val){alert('Informe o horário de entrada!');return;}
-    const[h,m]=val.split(':').map(Number);
-    entradaMin=h*60+m;
-    almocoIdx=-1;
+    if(!val){ alert('Informe o horário de entrada!'); return; }
+    entradaMin=hhmmToMin(val);
     breakStart={};
-    intervals=makeIntervals(entradaMin,-1);
-    document.getElementById('toggle-almoco').checked=false;
-    ctx(); // unlock audio
+    almocoIdx=-1;
+    schedule=buildSchedule();
+    getCtx();
     document.getElementById('card-intervalos').style.display='';
-    document.getElementById('btn-ok-wrap').style.display='';
+    document.getElementById('fixed-bottom').style.display='';
     document.getElementById('cd-bar').style.display='';
     renderAll();
     if(ticker) clearInterval(ticker);
     ticker=setInterval(renderAll,1000);
   }
 
-  function toggleAlmoco(){
-    const checked=document.getElementById('toggle-almoco').checked;
-    if(!checked){ almocoIdx=-1; }
-    else {
-      // Marca o intervalo atual ou o próximo
-      const now=nowMin();
-      let target=-1;
-      for(const iv of intervals){
-        if(iv.isLast) continue;
-        // em andamento ou próximo a ser iniciado
-        if(breakStart[iv.idx]!==undefined || iv.startMin>=now){
-          target=iv.idx; break;
-        }
-      }
-      if(target===-1){
-        // pega o primeiro que ainda não passou
-        for(const iv of intervals){ if(!iv.isLast && iv.startMin>=now){ target=iv.idx; break; } }
-      }
-      if(target===-1){
-        document.getElementById('toggle-almoco').checked=false;
-        toast('Nenhum intervalo disponível para marcar como almoço.',4000);
-        return;
-      }
-      almocoIdx=target;
-    }
-    intervals=makeIntervals(entradaMin, almocoIdx);
+  function marcarAlmoco(idx){
+    almocoIdx = (almocoIdx===idx) ? -1 : idx;
+    schedule=buildSchedule();
     renderAll();
+    const msg=almocoIdx===idx?`🍽️ Intervalo ${idx+1} marcado como almoço (30 min)`:'Almoço desmarcado';
+    toast(msg,3000);
   }
 
   function iniciar(idx){
     breakStart[idx]=nowMs();
+    schedule=buildSchedule();
     renderAll();
-    toast(`⏳ Intervalo ${idx+1} iniciado!`,3000);
+    toast(`▶️ Intervalo ${idx+1} iniciado às ${msToHHMM(breakStart[idx])}`,3000);
+  }
+
+  function openModal(idx){
+    modalIdx=idx;
+    const ref=breakStart[idx]?new Date(breakStart[idx]):new Date();
+    document.getElementById('modal-time').value=
+      String(ref.getHours()).padStart(2,'0')+':'+String(ref.getMinutes()).padStart(2,'0');
+    document.getElementById('modal-desc').textContent=
+      `Horário real que você saiu para o Intervalo ${idx+1}:`;
+    document.getElementById('modal').classList.add('open');
+  }
+  function closeModal(){ document.getElementById('modal').classList.remove('open'); modalIdx=-1; }
+  function confirmAjuste(){
+    const val=document.getElementById('modal-time').value;
+    if(!val){ alert('Informe um horário.'); return; }
+    breakStart[modalIdx]=todayMs(hhmmToMin(val));
+    schedule=buildSchedule();
+    closeModal();
+    renderAll();
+    toast(`✅ Intervalo ${modalIdx+1} ajustado para ${val}`,3000);
   }
 
   function renderAll(){
-    const now=nowMin();
-    intervals=makeIntervals(entradaMin,almocoIdx);
-    renderList(now);
-    renderInfoRows(now);
-    renderCountdown(now);
-    checkAlerts(now);
+    schedule=buildSchedule();
+    const nowMs2=nowMs();
+    const nowM=nowMin();
+    renderList(nowMs2,nowM);
+    renderSaida(nowMs2,nowM);
+    renderCountdown(nowMs2,nowM);
+    checkAlerts(nowMs2,nowM);
   }
 
-  function renderList(now){
+  function renderList(nowMs2,nowM){
     const list=document.getElementById('int-list');
     list.innerHTML='';
 
-    intervals.forEach(iv=>{
-      const started  = breakStart[iv.idx]!==undefined;
-      const durMs    = iv.dur*60*1000;
-      const remMs    = started ? (breakStart[iv.idx]+durMs - nowMs()) : null;
-      const running  = started && remMs!==null && remMs>0;
-      const doneBreak= started && remMs!==null && remMs<=0;
-      const upcoming = !started && iv.startMin>now;
-      const due      = !started && iv.startMin<=now; // chegou a hora, não iniciou
+    schedule.forEach(row=>{
+      const started   = row.bStartMs_real!==null;
+      const remMs     = row.bEndMs_real ? row.bEndMs_real-nowMs2 : null;
+      const running   = started && remMs!==null && remMs>0;
+      const doneBreak = started && remMs!==null && remMs<=0;
+      const due       = !started && nowMs2>=row.bStartMs_plan;
 
-      const row=document.createElement('div');
-      row.className='int-row'+(running?' active-now':'')+(doneBreak?' done':'');
+      let rowCls='int-row';
+      if(doneBreak) rowCls+=' row-done';
+      else if(running) rowCls+=' row-running';
+      else if(due) rowCls+=' row-now';
+
+      const el=document.createElement('div');
+      el.className=rowCls;
 
       // Ícone
       const icon=document.createElement('div');
       icon.className='int-icon';
-      icon.textContent = iv.isAlmoco ? '🍽️' : (doneBreak ? '✅' : (running ? '⏳' : '🔔'));
+      icon.textContent=doneBreak?'✅':running?'⏳':row.isAlmoco?'🍽️':due?'🔔':'🔕';
 
       // Info
       const info=document.createElement('div');
       info.className='int-info';
+
       const name=document.createElement('div');
       name.className='int-name';
-      name.textContent = iv.isLast
-        ? `${iv.idx+1}° Intervalo (último)`
-        : iv.isAlmoco
-          ? 'Almoço'
-          : `${iv.idx+1}° Intervalo`;
-      info.appendChild(name);
+      name.textContent=row.isLast
+        ?`${row.idx+1}° Intervalo — ÚLTIMO (bater saída ao sair)`
+        :row.isAlmoco
+          ?`${row.idx+1}° Intervalo — Almoço 🍽️`
+          :`${row.idx+1}° Intervalo`;
 
-      // Horários
       const times=document.createElement('div');
       times.className='int-times';
-      // Se iniciado, mostrar horário real de início
-      let startDisplay=hhmm(iv.startMin);
+      const planStr=`${msToHHMM(row.bStartMs_plan)} – ${msToHHMM(row.bEndMs_plan)}`;
       if(started){
-        const d=new Date(breakStart[iv.idx]);
-        startDisplay=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+        const realStr=`${msToHHMM(row.bStartMs_real)} – ${row.bEndMs_real?msToHHMM(row.bEndMs_real):'--:--'}`;
+        times.textContent=`${realStr}  (previsto: ${planStr})`;
+      } else {
+        times.textContent=planStr;
       }
-      const endRealMs = started ? breakStart[iv.idx]+durMs : null;
-      let endDisplay=hhmm(iv.endMin);
-      if(endRealMs){
-        const d=new Date(endRealMs);
-        endDisplay=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-      }
-      times.textContent=`${startDisplay} – ${endDisplay}`;
+
+      info.appendChild(name);
       info.appendChild(times);
 
-      // Badge / botão
-      const right=document.createElement('div');
-      if(iv.isLast && iv.startMin<=now){
-        // Último intervalo chegou → só mostra saída
-        const b=document.createElement('div');
-        b.className='int-badge badge-alert';
-        b.textContent='🚪 Sair!';
-        right.appendChild(b);
-      } else if(doneBreak){
-        const b=document.createElement('div');
-        b.className='int-badge badge-done';
-        b.textContent='✅ Concluído';
-        right.appendChild(b);
-      } else if(running){
-        const b=document.createElement('div');
-        b.className='int-badge badge-active';
-        b.textContent=fmtMs(remMs);
-        right.appendChild(b);
-      } else if(due && !iv.isLast){
-        // Chegou a hora — mostrar botão Iniciar
-        const btn=document.createElement('button');
-        btn.className='btn-iniciar';
-        btn.textContent='▶ Iniciar';
-        btn.onclick=()=>iniciar(iv.idx);
-        right.appendChild(btn);
-      } else {
-        // Futuro
-        const used = started?`${iv.dur}/${iv.dur}`:`0/${iv.dur}`;
-        const b=document.createElement('div');
-        b.className='int-badge badge-future';
-        b.textContent=used+' min';
-        right.appendChild(b);
+      // Ações
+      const actions=document.createElement('div');
+      actions.className='int-actions';
+
+      // Botão almoço (em qualquer intervalo que não seja o último e não esteja concluído)
+      if(!row.isLast && !doneBreak){
+        const btnAl=document.createElement('button');
+        btnAl.className='btn-sm btn-almoco-mark'+(row.isAlmoco?' ativo':'');
+        btnAl.textContent=row.isAlmoco?'🍽️ Almoço ✓':'🍽️ Almoço?';
+        btnAl.onclick=()=>marcarAlmoco(row.idx);
+        actions.appendChild(btnAl);
       }
 
-      row.appendChild(icon);
-      row.appendChild(info);
-      row.appendChild(right);
-      list.appendChild(row);
+      // Botão iniciar (quando chegou a hora e não é o último)
+      if(due && !started && !row.isLast){
+        const btnI=document.createElement('button');
+        btnI.className='btn-sm btn-iniciar';
+        btnI.textContent='▶ Iniciar';
+        btnI.onclick=()=>iniciar(row.idx);
+        actions.appendChild(btnI);
+      }
+
+      // Botão ajustar (se chegou a hora ou já iniciou)
+      if((due || started) && !row.isLast){
+        const btnA=document.createElement('button');
+        btnA.className='btn-sm btn-ajustar';
+        btnA.textContent='🕐 Ajustar';
+        btnA.onclick=()=>openModal(row.idx);
+        actions.appendChild(btnA);
+      }
+
+      if(actions.children.length) info.appendChild(actions);
+
+      // Badge
+      const right=document.createElement('div');
+      const badge=document.createElement('div');
+      badge.className='badge';
+      if(doneBreak){
+        badge.className+=' b-done'; badge.textContent='✅ OK';
+      } else if(running){
+        badge.className+=' b-running'; badge.textContent=fmtMs(remMs);
+      } else if(due && row.isLast){
+        badge.className+=' b-due'; badge.textContent='🚪 Sair!';
+      } else if(due){
+        badge.className+=' b-due'; badge.textContent='⏰ Agora!';
+      } else {
+        badge.className+=' b-future'; badge.textContent=`0/${row.dur} min`;
+      }
+      right.appendChild(badge);
+
+      el.appendChild(icon);
+      el.appendChild(info);
+      el.appendChild(right);
+      list.appendChild(el);
     });
   }
 
-  function renderInfoRows(now){
-    const desc=descontoMin(intervals);
-    document.getElementById('val-desconto').textContent=hhmm(saidaMin(intervals)-desc)+'  →  -'+desc+' min';
-    document.getElementById('val-saida').textContent=hhmm(saidaMin(intervals));
-
-    // Alerta de saída
-    const saida=saidaMin(intervals);
-    const banner=document.getElementById('alerta-banner');
-    if(now>=saida){ banner.style.display='block'; }
-    else           { banner.style.display='none';  }
+  function renderSaida(nowMs2,nowM){
+    const last=schedule[N-1];
+    const saidaMs=last.bEndMs_real||last.bEndMs_plan;
+    document.getElementById('saida-value').textContent=msToHHMM(saidaMs);
+    const passou=nowMs2>=saidaMs;
+    document.getElementById('alerta-banner').style.display=passou?'block':'none';
+    document.getElementById('saida-label').className='saida-label'+(passou?' alert':'');
+    document.getElementById('saida-value').className='saida-value'+(passou?' alert':'');
   }
 
-  function renderCountdown(now){
+  function renderCountdown(nowMs2,nowM){
     const bar=document.getElementById('cd-bar');
-    const saida=saidaMin(intervals);
-    if(now>=saida){ bar.innerHTML='🎉 <strong>Hora de ir embora!</strong> Bata o ponto final.'; return; }
+    const last=schedule[N-1];
+    const saidaMs=last.bEndMs_real||last.bEndMs_plan;
+
+    if(nowMs2>=saidaMs){ bar.innerHTML='🎉 <strong>Hora de ir embora!</strong>'; return; }
 
     // Intervalo em andamento?
-    let running=null;
-    for(const iv of intervals){
-      if(breakStart[iv.idx]===undefined) continue;
-      const remMs=breakStart[iv.idx]+iv.dur*60*1000-nowMs();
-      if(remMs>0){ running={iv,remMs}; break; }
-    }
-
-    if(running){
-      const{iv,remMs}=running;
-      bar.innerHTML=`⏳ ${iv.isAlmoco?'Almoço':'Intervalo '+( iv.idx+1)}: <strong>${fmtMs(remMs)}</strong> restantes`;
-      return;
-    }
-
-    // Próximo evento
-    let next=null;
-    for(const iv of intervals){
-      if(breakStart[iv.idx]!==undefined) continue;
-      if(iv.startMin>now){ next=iv; break; }
-    }
-    if(next){
-      const diff=(next.startMin-now);
-      bar.innerHTML=`🔔 Próximo intervalo em <strong>${diff} min</strong> (${hhmm(next.startMin)})`;
-    } else {
-      bar.innerHTML=`⏰ Saída prevista: <strong>${hhmm(saida)}</strong>`;
-    }
-  }
-
-  let lastAlertKey='';
-  function checkAlerts(now){
-    // Intervalo chegou (dentro de 1 min)
-    for(const iv of intervals){
-      if(breakStart[iv.idx]!==undefined) continue;
-      const diff=iv.startMin-now;
-      if(diff>=0&&diff<=1){
-        const key='start_'+iv.idx;
-        if(key!==lastAlertKey){
-          lastAlertKey=key;
-          playAlert();
-          const msg=iv.isLast
-            ?'⏰ Último intervalo! Bata o ponto de SAÍDA agora.'
-            :iv.isAlmoco
-              ?'🍽️ Hora do almoço! Clique em Iniciar quando sair.'
-              :`🔔 Intervalo ${iv.idx+1}! Clique em Iniciar quando sair.`;
-          toast(msg,8000);
-        }
+    for(const row of schedule){
+      if(!row.bStartMs_real) continue;
+      const rem=row.bEndMs_real-nowMs2;
+      if(rem>0){
+        const label=row.isAlmoco?'Almoço':`Intervalo ${row.idx+1}`;
+        bar.innerHTML=`⏳ ${label}: <strong>${fmtMs(rem)}</strong> restantes`;
+        return;
       }
     }
-    // Fim de intervalo em andamento
-    for(const iv of intervals){
-      if(breakStart[iv.idx]===undefined) continue;
-      const remMs=breakStart[iv.idx]+iv.dur*60*1000-nowMs();
-      if(remMs<=0&&remMs>-5000){
-        const key='end_'+iv.idx;
-        if(key!==lastAlertKey){
-          lastAlertKey=key;
-          playAlert();
-          toast(iv.isAlmoco?'▶️ Almoço encerrado! Hora de voltar.':`▶️ Intervalo ${iv.idx+1} encerrado! Hora de voltar.`,8000);
+
+    // Próximo intervalo
+    for(const row of schedule){
+      if(row.bStartMs_real) continue; // já iniciado
+      if(nowMs2<row.bStartMs_plan){
+        const rem=row.bStartMs_plan-nowMs2;
+        const mins=Math.ceil(rem/60000);
+        bar.innerHTML=`🔔 Próximo intervalo em <strong>${mins} min</strong> — às ${msToHHMM(row.bStartMs_plan)}`;
+        return;
+      }
+      if(nowMs2>=row.bStartMs_plan){
+        bar.innerHTML=`⚡ <strong>Hora do Intervalo ${row.idx+1}!</strong> Clique em Iniciar.`;
+        return;
+      }
+    }
+
+    bar.innerHTML=`⏰ Saída: <strong>${msToHHMM(saidaMs)}</strong>`;
+  }
+
+  function checkAlerts(nowMs2,nowM){
+    for(const row of schedule){
+      // Chegou hora de iniciar
+      if(!row.bStartMs_real){
+        const diff=nowMs2-row.bStartMs_plan;
+        if(diff>=0&&diff<90000){
+          const key='start_'+row.idx;
+          if(key!==lastKey){
+            lastKey=key; playAlert();
+            const msg=row.isLast
+              ?'⏰ Último intervalo! Bata o ponto de SAÍDA agora.'
+              :row.isAlmoco
+                ?'🍽️ Hora do almoço! Clique em Iniciar quando sair.'
+                :`🔔 Hora do Intervalo ${row.idx+1}! Clique em Iniciar quando sair.`;
+            toast(msg,9000);
+          }
+        }
+      }
+      // Fim do intervalo em andamento
+      if(row.bEndMs_real){
+        const rem=row.bEndMs_real-nowMs2;
+        if(rem<=0&&rem>-6000){
+          const key='end_'+row.idx;
+          if(key!==lastKey){
+            lastKey=key; playDone();
+            toast(row.isAlmoco?'▶️ Almoço encerrado! Hora de voltar.':`▶️ Intervalo ${row.idx+1} encerrado! Hora de voltar.`,9000);
+          }
+        }
+        // Aviso 2 min antes
+        if(rem>0&&rem<=120000&&rem>114000){
+          const key='warn2_'+row.idx;
+          if(key!==lastKey){
+            lastKey=key; beep(660,.2,.3);
+            toast(`⚠️ 2 minutos para fim do Intervalo ${row.idx+1}!`,5000);
+          }
         }
       }
     }
     // Saída
-    const saida=saidaMin(intervals);
-    if(now===saida&&'saida'!==lastAlertKey){
-      lastAlertKey='saida';
-      playAlert();
-      toast('🎉 Hora de ir embora! Bata o ponto final.',10000);
+    const last=schedule[N-1];
+    const saidaMs=last.bEndMs_real||last.bEndMs_plan;
+    const remSaida=saidaMs-nowMs2;
+    if(remSaida<=0&&remSaida>-6000&&lastKey!=='saida'){
+      lastKey='saida'; playAlert();
+      toast('🎉 Hora de ir embora! Bata o ponto final.',12000);
     }
   }
 
   function resetar(){
     if(ticker) clearInterval(ticker);
-    entradaMin=0;almocoIdx=-1;breakStart={};intervals=[];lastAlertKey='';
+    entradaMin=0; breakStart={}; schedule=[]; lastKey=''; almocoIdx=-1;
     document.getElementById('card-intervalos').style.display='none';
-    document.getElementById('btn-ok-wrap').style.display='none';
+    document.getElementById('fixed-bottom').style.display='none';
     document.getElementById('cd-bar').style.display='none';
     document.getElementById('entrada-input').value='';
-    document.getElementById('toggle-almoco').checked=false;
   }
 
-  let toastTimer=null;
+  let toastT=null;
   function toast(msg,dur=4000){
     const t=document.getElementById('toast');
-    t.textContent=msg;t.style.display='block';
-    clearTimeout(toastTimer);
-    toastTimer=setTimeout(()=>t.style.display='none',dur);
+    t.textContent=msg; t.style.display='block';
+    clearTimeout(toastT);
+    toastT=setTimeout(()=>t.style.display='none',dur);
   }
 
   window.onload=()=>{
