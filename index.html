@@ -233,6 +233,7 @@
   let lastKey    = '';        // usado só para persistência
   let modalIdx   = -1;
   let swReg      = null;
+  let lastAlarmHash = '';
 
   // ── Audio ──────────────────────────────────────────────────────────
   let actx = null;
@@ -506,6 +507,7 @@
     almocoIdx=-1;
     lastKey='';
     firedAlerts=new Set();
+    lastAlarmHash='';
     schedule=buildSchedule();
     getCtx();
     beep(440, 0.05, 0.2);
@@ -762,7 +764,7 @@
   function resetar(){
     if(ticker) clearInterval(ticker);
     limparNotificacoes(); limparStorage();
-    entradaMin=0; breakStart={}; breakEnd={}; schedule=[]; lastKey=''; almocoIdx=-1; firedAlerts=new Set();
+    entradaMin=0; breakStart={}; breakEnd={}; schedule=[]; lastKey=''; almocoIdx=-1; firedAlerts=new Set(); lastAlarmHash='';
     document.getElementById('card-intervalos').style.display='none';
     document.getElementById('fixed-bottom').style.display='none';
     document.getElementById('cd-bar').style.display='none';
@@ -776,6 +778,17 @@
   function renderAlarmes(){
     const container = document.getElementById('alarmes-list');
     if(!container || schedule.length===0) return;
+
+    // Calcula hash do schedule para evitar rebuild desnecessário a cada segundo
+    const hashParts = [];
+    schedule.filter(r=>!r.isSaida).forEach(row=>{
+      hashParts.push(`${row.idx}:${row.bStartMs_real||row.bStartMs_plan}:${row.bEndMs_real||row.bEndMs_plan}:${row.isAlmoco}`);
+    });
+    hashParts.push('s:'+getSaidaMs());
+    const newHash = hashParts.join('|');
+    if(newHash === lastAlarmHash) return; // nada mudou, não precisa reconstruir
+    lastAlarmHash = newHash;
+
     container.innerHTML='';
     const grid = document.createElement('div');
     grid.className='alarme-grid';
@@ -813,20 +826,18 @@
   }
 
   function abrirAlarme(h, m, label){
-    // Android: intent de alarme via link especial
-    const msg = label.replace(/[^\w\s]/gi,'').trim();
-    // Tenta abrir app de relógio nativo via intent URL
-    const intentUrl = `intent://alarm#Intent;scheme=android-app;package=com.google.android.deskclock;S.hours=${h};S.minutes=${m};S.message=${encodeURIComponent(msg)};end`;
-    // Fallback: link genérico que funciona em qualquer Android
-    const alarmUrl = `clock://alarm?hour=${h}&minutes=${m}&message=${encodeURIComponent(msg)}`;
+    // Remove emojis e caracteres especiais da mensagem
+    const msg = label.replace(/[^\w\s\-]/gi,'').trim();
 
-    // Tenta o intent primeiro, com fallback
-    try {
-      window.location.href = intentUrl;
-    } catch(e) {
-      window.location.href = alarmUrl;
-    }
-    toast(`⏰ Abrindo alarme para ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}…`, 3000);
+    // Formato correto do Android SET_ALARM intent
+    const url = `intent:#Intent;action=android.intent.action.SET_ALARM;` +
+      `S.android.intent.extra.alarm.HOUR=${h};` +
+      `S.android.intent.extra.alarm.MINUTES=${m};` +
+      `S.android.intent.extra.alarm.MESSAGE=${encodeURIComponent(msg)};` +
+      `B.android.intent.extra.alarm.SKIP_UI=false;end`;
+
+    window.location.href = url;
+    toast(`⏰ Abrindo relógio para ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}…`, 3000);
   }
 
   // ── Painel de teste (3 cliques no logo) ────────────────────────────
