@@ -185,12 +185,75 @@
 
   // ── Audio ──────────────────────────────────────────────────────────
   let actx = null;
-  function getCtx(){ if(!actx) actx=new(window.AudioContext||window.webkitAudioContext)(); return actx; }
-  function beep(f,d,v=.4){
-    try{const c=getCtx(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}
+
+  function getCtx(){
+    if(!actx) actx = new(window.AudioContext||window.webkitAudioContext)();
+    // Resume se estiver suspenso (política de autoplay dos navegadores)
+    if(actx.state === 'suspended') actx.resume();
+    return actx;
   }
-  function playAlert(){ beep(880,.15); setTimeout(()=>beep(1100,.15),220); setTimeout(()=>beep(1320,.3),450); }
-  function playDone() { beep(660,.1); setTimeout(()=>beep(880,.1),150); setTimeout(()=>beep(1100,.25),300); }
+
+  // Toca um beep simples
+  function beep(f, d, v=0.5){
+    try{
+      const c = getCtx();
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.connect(g);
+      g.connect(c.destination);
+      o.type = 'sine';
+      o.frequency.value = f;
+      g.gain.setValueAtTime(v, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + d);
+      o.start(c.currentTime);
+      o.stop(c.currentTime + d);
+    } catch(e){ console.warn('Beep falhou:', e); }
+  }
+
+  // Som de alerta (início do intervalo / saída)
+  function playAlert(){
+    const c = getCtx();
+    const t = c.currentTime;
+    [880, 1100, 1320].forEach((f, i) => {
+      const o = c.createOscillator(), g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.5, t + i*0.22);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i*0.22 + 0.2);
+      o.start(t + i*0.22);
+      o.stop(t + i*0.22 + 0.2);
+    });
+  }
+
+  // Som de conclusão (fim do intervalo — hora de voltar)
+  function playDone(){
+    const c = getCtx();
+    const t = c.currentTime;
+    [523, 659, 784, 1047].forEach((f, i) => {
+      const o = c.createOscillator(), g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.45, t + i*0.18);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i*0.18 + 0.25);
+      o.start(t + i*0.18);
+      o.stop(t + i*0.18 + 0.25);
+    });
+  }
+
+  // Som de aviso (2 min antes)
+  function playWarn(){
+    const c = getCtx();
+    const t = c.currentTime;
+    [660, 660].forEach((f, i) => {
+      const o = c.createOscillator(), g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.4, t + i*0.25);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i*0.25 + 0.15);
+      o.start(t + i*0.25);
+      o.stop(t + i*0.25 + 0.15);
+    });
+  }
 
   // ── Tempo ──────────────────────────────────────────────────────────
   function nowMin(){ const d=new Date(); return d.getHours()*60+d.getMinutes(); }
@@ -253,9 +316,44 @@
   async function registrarSW(){
     if(!('serviceWorker' in navigator)) return;
     try {
-      swReg = await navigator.serviceWorker.register('/sw.js');
+      // SW inline como blob — funciona local e no GitHub Pages
+      const swCode = `
+        self.addEventListener('install', e => self.skipWaiting());
+        self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+        const timers = [];
+        self.addEventListener('message', e => {
+          if(e.data && e.data.type === 'SCHEDULE_NOTIFICATIONS') {
+            timers.forEach(t => clearTimeout(t)); timers.length = 0;
+            const now = Date.now();
+            e.data.events.forEach(ev => {
+              const delay = ev.fireAt - now;
+              if(delay < 0) return;
+              timers.push(setTimeout(() => {
+                self.registration.showNotification(ev.title, {
+                  body: ev.body, icon: ev.icon||'',
+                  vibrate: [200,100,200], tag: ev.tag,
+                  renotify: true, requireInteraction: true
+                });
+              }, delay));
+            });
+          }
+          if(e.data && e.data.type === 'CLEAR_NOTIFICATIONS') {
+            timers.forEach(t => clearTimeout(t)); timers.length = 0;
+          }
+        });
+        self.addEventListener('notificationclick', e => {
+          e.notification.close();
+          e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list => {
+            if(list.length > 0) return list[0].focus();
+            return clients.openWindow('./');
+          }));
+        });
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      const url  = URL.createObjectURL(blob);
+      swReg = await navigator.serviceWorker.register(url, { scope: './' });
       await navigator.serviceWorker.ready;
-    } catch(e){ console.warn('SW falhou:', e); }
+    } catch(e){ console.warn('SW falhou (modo offline não disponível):', e.message); }
   }
 
   async function pedirPermissao(){
@@ -322,7 +420,9 @@
     lastKey='';
     firedAlerts=new Set();
     schedule=buildSchedule();
+    // Desbloqueia áudio no primeiro clique do usuário
     getCtx();
+    beep(440, 0.05, 0.2);
     document.getElementById('card-intervalos').style.display='';
     document.getElementById('fixed-bottom').style.display='';
     document.getElementById('cd-bar').style.display='';
@@ -342,6 +442,9 @@
   }
 
   function iniciar(idx){
+    // Garante áudio desbloqueado pelo clique do usuário
+    getCtx();
+    beep(440, 0.08, 0.3); // beep suave de confirmação
     breakStart[idx]=nowMs();
     schedule=buildSchedule();
     salvar(); agendarNotificacoes();
@@ -524,7 +627,7 @@
         // Aviso de 2 minutos antes
         if(rem > 0 && rem <= 120000){
           fireOnce('warn2_'+row.idx, ()=>{
-            beep(880,.12); setTimeout(()=>beep(880,.12),200);
+            playWarn();
             const label = row.isAlmoco ? 'almoço' : `intervalo ${row.idx+1}`;
             toast(`⚠️ 2 minutos para fim do ${label}!`, 6000);
           });
