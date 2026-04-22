@@ -94,12 +94,24 @@
     .btn-ok{width:100%;background:#2e7d52;color:#fff;border:none;border-radius:14px;padding:14px;font-size:.95rem;font-weight:700;cursor:pointer;}
 
     #toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#1e3a5f;color:#fff;padding:12px 20px;border-radius:12px;font-size:.85rem;font-weight:600;z-index:200;display:none;max-width:340px;text-align:center;box-shadow:0 4px 16px #0004;}
+
+    /* Painel de teste */
+    #teste-panel{width:100%;max-width:480px;background:#fff;border-radius:16px;box-shadow:0 1px 5px #0001;overflow:hidden;margin-bottom:12px;display:none;}
+    #teste-panel .sec-header{background:#fef3c7;}
+    #teste-panel .sec-header-left{color:#92400e;}
+    .teste-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px;}
+    .btn-teste{border:none;border-radius:10px;padding:10px 8px;font-size:.75rem;font-weight:700;cursor:pointer;text-align:center;}
+    .bt-som1{background:#dbeafe;color:#1e40af;}
+    .bt-som2{background:#dcfce7;color:#166534;}
+    .bt-som3{background:#fef9c3;color:#854d0e;}
+    .bt-alerta{background:#fee2e2;color:#991b1b;}
+    .bt-notif{background:#f3e8ff;color:#6b21a8;grid-column:span 2;}
   </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-left">🕐 <h1>Controle de Intervalos</h1></div>
+  <div class="header-left" id="logo-tap" onclick="tapLogo()">🕐 <h1>Controle de Intervalos</h1></div>
   <button class="btn-sair" onclick="resetar()">Sair</button>
 </div>
 
@@ -112,6 +124,18 @@
 <div id="cd-bar"></div>
 
 <div class="main">
+
+  <!-- PAINEL DE TESTE (só aparece ao apertar logo 3x) -->
+  <div id="teste-panel">
+    <div class="sec-header"><div class="sec-header-left">🧪 Testar sons e alertas</div></div>
+    <div class="teste-grid">
+      <button class="btn-teste bt-som1" onclick="testar('inicio')">🔔 Som de intervalo<br><small>início</small></button>
+      <button class="btn-teste bt-som2" onclick="testar('fim')">✅ Som de fim<br><small>hora de voltar</small></button>
+      <button class="btn-teste bt-som3" onclick="testar('aviso')">⚠️ Aviso 2 min<br><small>antes de acabar</small></button>
+      <button class="btn-teste bt-alerta" onclick="testar('saida')">🚪 Som de saída<br><small>fim do dia</small></button>
+      <button class="btn-teste bt-notif" onclick="testar('notificacao')">🔔 Testar notificação do sistema</button>
+    </div>
+  </div>
   <div class="card" id="card-entrada">
     <div class="sec-header"><div class="sec-header-left">☰ Entrada</div></div>
     <div class="entrada-body">
@@ -670,6 +694,48 @@
 
   let toastT=null;
   function toast(msg,dur=4000){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(toastT); toastT=setTimeout(()=>t.style.display='none',dur); }
+
+  // ── Painel de teste (3 cliques no logo) ────────────────────────────
+  let tapCount=0, tapTimer=null;
+  function tapLogo(){
+    tapCount++;
+    clearTimeout(tapTimer);
+    tapTimer=setTimeout(()=>{ tapCount=0; },800);
+    if(tapCount>=3){
+      tapCount=0;
+      const p=document.getElementById('teste-panel');
+      p.style.display = p.style.display==='none'||p.style.display==='' ? 'block' : 'none';
+      if(p.style.display==='block') toast('🧪 Modo de teste ativado!',2000);
+    }
+  }
+
+  function testar(tipo){
+    getCtx(); // garante áudio desbloqueado
+    if(tipo==='inicio'){
+      playAlert();
+      toast('🔔 Hora do Intervalo 1! Clique em Iniciar quando sair.',5000);
+    } else if(tipo==='fim'){
+      playDone();
+      toast('▶️ Intervalo encerrado! Hora de voltar.',5000);
+    } else if(tipo==='aviso'){
+      playWarn();
+      toast('⚠️ 2 minutos para fim do intervalo!',5000);
+    } else if(tipo==='saida'){
+      playAlert();
+      setTimeout(()=>playAlert(),600);
+      toast('🎉 Hora de ir embora! Bata o ponto final.',5000);
+    } else if(tipo==='notificacao'){
+      if(Notification.permission!=='granted'){
+        toast('⚠️ Ative as notificações primeiro (banner amarelo acima).',5000);
+        return;
+      }
+      new Notification('🔔 Teste de notificação', {
+        body: 'Se você está vendo isso, as notificações funcionam! ✅',
+        icon: 'icon-192.png'
+      });
+      toast('✅ Notificação enviada! Verifique na barra do celular.',4000);
+    }
+  }
 
   // ── Init ───────────────────────────────────────────────────────────
   window.onload = async () => {
