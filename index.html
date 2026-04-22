@@ -181,7 +181,7 @@
     <div class="alarmes-section">
       <div class="alarmes-header">
         ⏰ Criar alarmes no celular
-        <span class="alarmes-hint">Toque para abrir o Relógio com o horário preenchido</span>
+        <span class="alarmes-hint">Toque para copiar o horário e criar o alarme no Relógio</span>
       </div>
       <div id="alarmes-list"></div>
     </div>
@@ -828,16 +828,73 @@
   function abrirAlarme(h, m, label){
     // Remove emojis e caracteres especiais da mensagem
     const msg = label.replace(/[^\w\s\-]/gi,'').trim();
+    const hStr = String(h).padStart(2,'0');
+    const mStr = String(m).padStart(2,'0');
 
-    // Formato correto do Android SET_ALARM intent
-    const url = `intent:#Intent;action=android.intent.action.SET_ALARM;` +
-      `S.android.intent.extra.alarm.HOUR=${h};` +
-      `S.android.intent.extra.alarm.MINUTES=${m};` +
-      `S.android.intent.extra.alarm.MESSAGE=${encodeURIComponent(msg)};` +
-      `B.android.intent.extra.alarm.SKIP_UI=false;end`;
+    // Abre modal de cópia — mais confiável que intent em PWA
+    mostrarModalAlarme(hStr, mStr, msg);
+  }
 
-    window.location.href = url;
-    toast(`⏰ Abrindo relógio para ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}…`, 3000);
+  // Modal para copiar hora e abrir relógio manualmente
+  function mostrarModalAlarme(hStr, mStr, label){
+    // Remove modal anterior se existir
+    const old = document.getElementById('modal-alarme');
+    if(old) old.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'modal-alarme';
+    overlay.style.cssText = 'display:flex;position:fixed;inset:0;background:#0008;z-index:200;align-items:center;justify-content:center;';
+
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:18px;padding:24px 20px;width:88%;max-width:320px;text-align:center;box-shadow:0 8px 32px #0003;">
+        <div style="font-size:.8rem;color:#667788;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">${label}</div>
+        <div id="alarme-hora-display" style="font-size:3rem;font-weight:800;color:#1e3a5f;letter-spacing:4px;margin:8px 0 16px;cursor:pointer;user-select:all;background:#f0f4ff;border-radius:12px;padding:10px 0;">${hStr}:${mStr}</div>
+        <div style="font-size:.78rem;color:#445566;margin-bottom:16px;">Toque na hora para copiar, depois abra o Relógio e crie o alarme.</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button id="btn-copiar-hora" style="background:#1e3a5f;color:#fff;border:none;border-radius:10px;padding:12px;font-size:.9rem;font-weight:700;cursor:pointer;">📋 Copiar ${hStr}:${mStr}</button>
+          <button onclick="document.getElementById('modal-alarme').remove()" style="background:#f0f2f5;color:#445566;border:none;border-radius:10px;padding:11px;font-size:.88rem;font-weight:700;cursor:pointer;">Fechar</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Fechar ao clicar fora
+    overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+
+    // Botão copiar
+    document.getElementById('btn-copiar-hora').addEventListener('click', () => {
+      copiarTexto(`${hStr}:${mStr}`, `${hStr}:${mStr} copiado! Abra o Relógio e cole.`);
+    });
+    // Toque na hora também copia
+    document.getElementById('alarme-hora-display').addEventListener('click', () => {
+      copiarTexto(`${hStr}:${mStr}`, `${hStr}:${mStr} copiado!`);
+    });
+  }
+
+  function copiarTexto(texto, mensagem){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(texto).then(()=>{
+        toast('✅ '+mensagem, 4000);
+      }).catch(()=>{
+        // Fallback
+        tentarCopiarFallback(texto);
+        toast('✅ '+mensagem, 4000);
+      });
+    } else {
+      tentarCopiarFallback(texto);
+      toast('✅ '+mensagem, 4000);
+    }
+  }
+
+  function tentarCopiarFallback(texto){
+    const el = document.createElement('textarea');
+    el.value = texto;
+    el.style.position='fixed';el.style.top='-999px';
+    document.body.appendChild(el);
+    el.focus(); el.select();
+    try{ document.execCommand('copy'); }catch(e){}
+    document.body.removeChild(el);
   }
 
   // ── Painel de teste (3 cliques no logo) ────────────────────────────
