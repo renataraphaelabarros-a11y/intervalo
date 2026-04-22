@@ -358,61 +358,10 @@
   async function registrarSW(){
     if(!('serviceWorker' in navigator)) return;
     try {
-      const swCode = `
-        self.addEventListener('install', e => self.skipWaiting());
-        self.addEventListener('activate', e => e.waitUntil(clients.claim()));
-        const timers = [];
-        self.addEventListener('message', e => {
-          if(e.data && e.data.type === 'SCHEDULE_NOTIFICATIONS') {
-            timers.forEach(t => clearTimeout(t)); timers.length = 0;
-            const now = Date.now();
-            e.data.events.forEach(ev => {
-              const delay = ev.fireAt - now;
-              if(delay < 0) return;
-              timers.push(setTimeout(() => {
-                self.registration.showNotification(ev.title, {
-                  body: ev.body,
-                  icon: ev.icon || '',
-                  badge: ev.icon || '',
-                  vibrate: [300, 100, 300, 100, 300],
-                  tag: ev.tag,
-                  renotify: true,
-                  requireInteraction: true,
-                  actions: [
-                    { action: 'open', title: '📲 Abrir app' }
-                  ],
-                  data: { url: self.registration.scope }
-                });
-              }, delay));
-            });
-          }
-          if(e.data && e.data.type === 'CLEAR_NOTIFICATIONS') {
-            timers.forEach(t => clearTimeout(t)); timers.length = 0;
-          }
-        });
-
-        // Clique na notificação ou no botão "Abrir app" → acende tela e foca o app
-        self.addEventListener('notificationclick', e => {
-          e.notification.close();
-          const url = (e.notification.data && e.notification.data.url) || self.registration.scope;
-          e.waitUntil(
-            clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-              // Procura janela já aberta e foca
-              for(const client of list){
-                if(client.url.startsWith(self.registration.scope) && 'focus' in client){
-                  return client.focus();
-                }
-              }
-              // Se não tiver aberta, abre nova (acende a tela)
-              return clients.openWindow(url);
-            })
-          );
-        });
-      `;
-      const blob = new Blob([swCode], { type: 'application/javascript' });
-      const url  = URL.createObjectURL(blob);
-      swReg = await navigator.serviceWorker.register(url, { scope: './' });
+      // Usa sw.js externo (funciona no GitHub Pages e localmente)
+      swReg = await navigator.serviceWorker.register('./sw.js');
       await navigator.serviceWorker.ready;
+      console.log('SW registrado com sucesso');
     } catch(e){ console.warn('SW falhou:', e.message); }
   }
 

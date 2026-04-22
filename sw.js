@@ -1,33 +1,25 @@
 // Service Worker - Controle de Intervalos
-const CACHE = 'intervalos-v1';
-const FILES = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
+const CACHE = 'intervalos-v2';
+const FILES = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
-// Instala e faz cache dos arquivos
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(clients.claim());
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    ).then(() => clients.claim())
+  );
 });
 
-// Serve do cache quando offline
 self.addEventListener('fetch', e => {
   e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
 });
 
-// Recebe mensagens da página para agendar notificações
-self.addEventListener('message', e => {
-  if (e.data && e.data.type === 'SCHEDULE_NOTIFICATIONS') {
-    scheduleAll(e.data.events);
-  }
-  if (e.data && e.data.type === 'CLEAR_NOTIFICATIONS') {
-    clearAll();
-  }
-});
-
-// Guarda os timeouts agendados
+// Timers de notificação
 const timers = [];
 
 function clearAll() {
@@ -35,35 +27,46 @@ function clearAll() {
   timers.length = 0;
 }
 
-function scheduleAll(events) {
-  clearAll();
-  const now = Date.now();
-  events.forEach(ev => {
-    const delay = ev.fireAt - now;
-    if (delay < 0) return; // já passou
-    const t = setTimeout(() => {
-      self.registration.showNotification(ev.title, {
-        body: ev.body,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        vibrate: [200, 100, 200],
-        tag: ev.tag,
-        renotify: true,
-        requireInteraction: true,
-        data: { url: '/' }
-      });
-    }, delay);
-    timers.push(t);
-  });
-}
+self.addEventListener('message', e => {
+  if (!e.data) return;
+  if (e.data.type === 'SCHEDULE_NOTIFICATIONS') {
+    clearAll();
+    const now = Date.now();
+    (e.data.events || []).forEach(ev => {
+      const delay = ev.fireAt - now;
+      if (delay < 0) return;
+      const t = setTimeout(() => {
+        self.registration.showNotification(ev.title, {
+          body: ev.body,
+          icon: './icon-192.png',
+          badge: './icon-192.png',
+          vibrate: [300, 100, 300, 100, 300],
+          tag: ev.tag,
+          renotify: true,
+          requireInteraction: true,
+          data: { url: self.registration.scope }
+        });
+      }, delay);
+      timers.push(t);
+    });
+  }
+  if (e.data.type === 'CLEAR_NOTIFICATIONS') {
+    clearAll();
+  }
+});
 
-// Clique na notificação → abre o app
+// Clique na notificação → foca ou abre o app
 self.addEventListener('notificationclick', e => {
   e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || self.registration.scope;
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-      if (list.length > 0) return list[0].focus();
-      return clients.openWindow('/');
+      for (const client of list) {
+        if (client.url.startsWith(self.registration.scope) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      return clients.openWindow(url);
     })
   );
 });
