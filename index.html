@@ -792,32 +792,21 @@
         toast('⚠️ Ative as notificações primeiro (banner amarelo acima).',5000);
         return;
       }
-      // No mobile, precisa usar o Service Worker para mostrar notificação
       const dispararNotif = async () => {
         try {
-          if(swReg && swReg.active){
-            // Manda pro SW disparar em 2 segundos
-            swReg.active.postMessage({
-              type: 'SCHEDULE_NOTIFICATIONS',
-              events: [{
-                fireAt: Date.now() + 2000,
-                tag: 'teste',
-                title: '🔔 Teste de notificação',
-                body: 'Se você está vendo isso, as notificações funcionam! ✅',
-                icon: 'icon-192.png'
-              }]
-            });
-            toast('✅ Notificação em 2 segundos! Minimize o app para ver.',5000);
-          } else {
-            // Fallback direto (funciona só no desktop)
-            new Notification('🔔 Teste de notificação', {
-              body: 'Se você está vendo isso, as notificações funcionam! ✅',
-              icon: 'icon-192.png'
-            });
-            toast('✅ Notificação enviada!',4000);
-          }
+          // Garante SW registrado e ativo
+          const reg = await navigator.serviceWorker.ready;
+          await reg.showNotification('🔔 Teste de notificação', {
+            body: 'Funcionou! Toque aqui para abrir o app. ✅',
+            icon: 'icon-192.png',
+            badge: 'icon-192.png',
+            vibrate: [300, 100, 300],
+            requireInteraction: true,
+            tag: 'teste'
+          });
+          toast('✅ Notificação enviada! Verifique na barra do celular.',5000);
         } catch(e){
-          toast('❌ Erro ao enviar notificação: '+e.message, 5000);
+          toast('❌ Erro: '+e.message, 6000);
         }
       };
       dispararNotif();
