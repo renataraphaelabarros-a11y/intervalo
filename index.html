@@ -191,11 +191,12 @@
 <div id="toast"></div>
 
 <script>
-  const WORK  = 50;
-  const SHORT = 10;
-  const LUNCH = 30;
-  const N     = 5;
-  const STORE = 'intervalos_state';
+  const WORK     = 50; // minutos de trabalho por bloco
+  const SHORT    = 10; // minutos de intervalo normal
+  const LUNCH    = 30; // minutos de almoço
+  const N_BLOCOS = 6;  // 6 blocos de trabalho (6×50 = 5h)
+  const N        = 5;  // 5 intervalos entre os blocos
+  const STORE    = 'intervalos_state';
 
   let entradaMin = 0;
   let almocoIdx  = -1;
@@ -313,24 +314,41 @@
   function limparStorage(){ try{ localStorage.removeItem(STORE); }catch(e){} }
 
   // ── Schedule ───────────────────────────────────────────────────────
+  // 6 blocos de 50 min, 5 intervalos entre eles. Saída = fim do 6º bloco.
+  //
+  // Entrada
+  //   Bloco 1 (50min) → Int 1 (10min)
+  //   Bloco 2 (50min) → Int 2 (10min)
+  //   Bloco 3 (50min) → Int 3 (10 ou 30min almoço)
+  //   Bloco 4 (50min) → Int 4 (10min)
+  //   Bloco 5 (50min) → Int 5 (10min)
+  //   Bloco 6 (50min) → SAÍDA
   function buildSchedule(){
     const rows=[];
     const baseMs = todayMs(entradaMin);
     let cursorMs = baseMs;
-    for(let i=0;i<N;i++){
-      const isLast   = i===N-1;
+
+    for(let i=0;i<N;i++){ // N=5 intervalos
       const isAlmoco = i===almocoIdx;
-      const dur      = isLast ? SHORT : (isAlmoco ? LUNCH : SHORT);
+      const dur      = isAlmoco ? LUNCH : SHORT;
+
       const bStartMs_plan = cursorMs + WORK*60*1000;
       const bEndMs_plan   = bStartMs_plan + dur*60*1000;
+
       const bStartMs_real = breakStart[i]!==undefined ? breakStart[i] : null;
-      // fim real: se ajustado manualmente usa breakEnd, senão calcula pelo início + duração
       const bEndMs_real   = bStartMs_real!==null
         ? (breakEnd[i]!==undefined ? breakEnd[i] : bStartMs_real+dur*60*1000)
         : null;
-      rows.push({ idx:i, bStartMs_plan, bEndMs_plan, bStartMs_real, bEndMs_real, dur, isLast, isAlmoco });
+
+      rows.push({ idx:i, bStartMs_plan, bEndMs_plan, bStartMs_real, bEndMs_real, dur, isAlmoco, isLast:false, isSaida:false });
+
       cursorMs = bEndMs_real!==null ? bEndMs_real : bEndMs_plan;
     }
+
+    // Saída = fim do 6º bloco (N+1 = bloco 6)
+    const saidaMs_plan = cursorMs + WORK*60*1000;
+    rows.push({ idx:'saida', bStartMs_plan:saidaMs_plan, bEndMs_plan:saidaMs_plan, bStartMs_real:null, bEndMs_real:null, dur:0, isAlmoco:false, isLast:true, isSaida:true });
+
     return rows;
   }
 
@@ -340,7 +358,6 @@
   async function registrarSW(){
     if(!('serviceWorker' in navigator)) return;
     try {
-      // SW inline como blob — funciona local e no GitHub Pages
       const swCode = `
         self.addEventListener('install', e => self.skipWaiting());
         self.addEventListener('activate', e => e.waitUntil(clients.claim()));
@@ -354,9 +371,17 @@
               if(delay < 0) return;
               timers.push(setTimeout(() => {
                 self.registration.showNotification(ev.title, {
-                  body: ev.body, icon: ev.icon||'',
-                  vibrate: [200,100,200], tag: ev.tag,
-                  renotify: true, requireInteraction: true
+                  body: ev.body,
+                  icon: ev.icon || '',
+                  badge: ev.icon || '',
+                  vibrate: [300, 100, 300, 100, 300],
+                  tag: ev.tag,
+                  renotify: true,
+                  requireInteraction: true,
+                  actions: [
+                    { action: 'open', title: '📲 Abrir app' }
+                  ],
+                  data: { url: self.registration.scope }
                 });
               }, delay));
             });
@@ -365,19 +390,45 @@
             timers.forEach(t => clearTimeout(t)); timers.length = 0;
           }
         });
+
+        // Clique na notificação ou no botão "Abrir app" → acende tela e foca o app
         self.addEventListener('notificationclick', e => {
           e.notification.close();
-          e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list => {
-            if(list.length > 0) return list[0].focus();
-            return clients.openWindow('./');
-          }));
+          const url = (e.notification.data && e.notification.data.url) || self.registration.scope;
+          e.waitUntil(
+            clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+              // Procura janela já aberta e foca
+              for(const client of list){
+                if(client.url.startsWith(self.registration.scope) && 'focus' in client){
+                  return client.focus();
+                }
+              }
+              // Se não tiver aberta, abre nova (acende a tela)
+              return clients.openWindow(url);
+            })
+          );
         });
       `;
       const blob = new Blob([swCode], { type: 'application/javascript' });
       const url  = URL.createObjectURL(blob);
       swReg = await navigator.serviceWorker.register(url, { scope: './' });
       await navigator.serviceWorker.ready;
-    } catch(e){ console.warn('SW falhou (modo offline não disponível):', e.message); }
+    } catch(e){ console.warn('SW falhou:', e.message); }
+  }
+
+  // ── Wake Lock (mantém tela acesa enquanto o app está aberto) ────────
+  let wakeLock = null;
+  async function ativarWakeLock(){
+    if(!('wakeLock' in navigator)) return;
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      // Reativa se a tela for bloqueada e reaberta
+      document.addEventListener('visibilitychange', async () => {
+        if(wakeLock !== null && document.visibilityState === 'visible'){
+          try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+        }
+      });
+    } catch(e){ console.warn('Wake Lock não disponível:', e.message); }
   }
 
   async function pedirPermissao(){
@@ -444,9 +495,9 @@
     lastKey='';
     firedAlerts=new Set();
     schedule=buildSchedule();
-    // Desbloqueia áudio no primeiro clique do usuário
     getCtx();
     beep(440, 0.05, 0.2);
+    ativarWakeLock(); // tenta manter tela acesa
     document.getElementById('card-intervalos').style.display='';
     document.getElementById('fixed-bottom').style.display='';
     document.getElementById('cd-bar').style.display='';
@@ -520,7 +571,7 @@
   function renderList(nowMs2){
     const list=document.getElementById('int-list');
     list.innerHTML='';
-    schedule.forEach(row=>{
+    schedule.filter(r=>!r.isSaida).forEach(row=>{
       const started   = row.bStartMs_real!==null;
       const remMs     = row.bEndMs_real ? row.bEndMs_real-nowMs2 : null;
       const running   = started && remMs!==null && remMs>0;
@@ -540,7 +591,7 @@
       const info=document.createElement('div'); info.className='int-info';
 
       const name=document.createElement('div'); name.className='int-name';
-      name.textContent=row.isLast?`${row.idx+1}° Intervalo — ÚLTIMO (bater saída ao sair)`:row.isAlmoco?`${row.idx+1}° Intervalo — Almoço 🍽️`:`${row.idx+1}° Intervalo`;
+      name.textContent=row.isAlmoco?`${row.idx+1}° Intervalo — Almoço 🍽️`:`${row.idx+1}° Intervalo`;
 
       const times=document.createElement('div'); times.className='int-times';
       const planStr=`${msToHHMM(row.bStartMs_plan)} – ${msToHHMM(row.bEndMs_plan)}`;
@@ -591,8 +642,7 @@
   }
 
   function renderSaida(nowMs2){
-    const last=schedule[N-1];
-    const saidaMs=last.bEndMs_real||last.bEndMs_plan;
+    const saidaMs=getSaidaMs();
     document.getElementById('saida-value').textContent=msToHHMM(saidaMs);
     const passou=nowMs2>=saidaMs;
     document.getElementById('alerta-banner').style.display=passou?'block':'none';
@@ -600,23 +650,44 @@
     document.getElementById('saida-value').className='saida-value'+(passou?' alert':'');
   }
 
+  // Pega a linha de saída do schedule
+  function getSaida(){ return schedule[schedule.length-1]; }
+  function getSaidaMs(){ const s=getSaida(); return s.bStartMs_plan; }
+
   function renderCountdown(nowMs2){
     const bar=document.getElementById('cd-bar');
-    const last=schedule[N-1];
-    const saidaMs=last.bEndMs_real||last.bEndMs_plan;
+    const saidaMs=getSaidaMs();
+
     if(nowMs2>=saidaMs){ bar.innerHTML='🎉 <strong>Hora de ir embora!</strong>'; return; }
 
+    // Intervalo em andamento?
     for(const row of schedule){
-      if(!row.bStartMs_real) continue;
+      if(row.isSaida || !row.bStartMs_real || !row.bEndMs_real) continue;
       const rem=row.bEndMs_real-nowMs2;
-      if(rem>0){ const label=row.isAlmoco?'Almoço':`Intervalo ${row.idx+1}`; bar.innerHTML=`⏳ ${label}: <strong>${fmtMs(rem)}</strong> restantes`; return; }
+      if(rem>0){
+        const label=row.isAlmoco?'Almoço':`Intervalo ${row.idx+1}`;
+        bar.innerHTML=`⏳ ${label}: <strong>${fmtMs(rem)}</strong> restantes`;
+        return;
+      }
     }
+
+    // Próximo intervalo pendente
     for(const row of schedule){
-      if(row.bStartMs_real) continue;
-      if(nowMs2<row.bStartMs_plan){ const rem=row.bStartMs_plan-nowMs2; const mins=Math.ceil(rem/60000); bar.innerHTML=`🔔 Próximo intervalo em <strong>${mins} min</strong> — às ${msToHHMM(row.bStartMs_plan)}`; return; }
-      if(nowMs2>=row.bStartMs_plan){ bar.innerHTML=`⚡ <strong>Hora do Intervalo ${row.idx+1}!</strong> Clique em Iniciar.`; return; }
+      if(row.isSaida || row.bStartMs_real) continue;
+      if(nowMs2<row.bStartMs_plan){
+        const mins=Math.ceil((row.bStartMs_plan-nowMs2)/60000);
+        bar.innerHTML=`🔔 Próximo intervalo em <strong>${mins} min</strong> — às ${msToHHMM(row.bStartMs_plan)}`;
+        return;
+      }
+      if(nowMs2>=row.bStartMs_plan){
+        bar.innerHTML=`⚡ <strong>Hora do Intervalo ${row.idx+1}!</strong> Clique em Iniciar.`;
+        return;
+      }
     }
-    bar.innerHTML=`⏰ Saída: <strong>${msToHHMM(saidaMs)}</strong>`;
+
+    // Contagem até a saída
+    const mins=Math.ceil((saidaMs-nowMs2)/60000);
+    bar.innerHTML=`⏰ Saída em <strong>${mins} min</strong> — às ${msToHHMM(saidaMs)}`;
   }
 
   function fireOnce(key, fn){
@@ -627,28 +698,26 @@
 
   function checkAlerts(nowMs2){
     for(const row of schedule){
+      if(row.isSaida) continue;
 
-      // ── Alerta: hora de sair pro intervalo (planejado) ──
+      // Hora de sair pro intervalo
       if(!row.bStartMs_real){
         const diff = nowMs2 - row.bStartMs_plan;
         if(diff >= 0 && diff < 90000){
           fireOnce('start_'+row.idx, ()=>{
             playAlert();
-            const msg = row.isLast
-              ? '⏰ Último intervalo! Bata o ponto de SAÍDA agora.'
-              : row.isAlmoco
-                ? '🍽️ Hora do almoço! Clique em Iniciar quando sair.'
-                : `🔔 Hora do Intervalo ${row.idx+1}! Clique em Iniciar quando sair.`;
+            const msg = row.isAlmoco
+              ? '🍽️ Hora do almoço! Clique em Iniciar quando sair.'
+              : `🔔 Hora do Intervalo ${row.idx+1}! Clique em Iniciar quando sair.`;
             toast(msg, 9000);
           });
         }
       }
 
-      // ── Alertas do intervalo em andamento ──
+      // Alertas do intervalo em andamento
       if(row.bEndMs_real){
         const rem = row.bEndMs_real - nowMs2;
-
-        // Aviso de 2 minutos antes
+        // Aviso 2 min antes
         if(rem > 0 && rem <= 120000){
           fireOnce('warn2_'+row.idx, ()=>{
             playWarn();
@@ -656,27 +725,21 @@
             toast(`⚠️ 2 minutos para fim do ${label}!`, 6000);
           });
         }
-
-        // Fim do intervalo
+        // Fim do intervalo — hora de voltar
         if(rem <= 0 && rem > -8000){
           fireOnce('end_'+row.idx, ()=>{
             playDone();
-            const msg = row.isAlmoco
-              ? '▶️ Almoço encerrado! Hora de voltar.'
-              : `▶️ Intervalo ${row.idx+1} encerrado! Hora de voltar.`;
-            toast(msg, 9000);
+            toast(row.isAlmoco ? '▶️ Almoço encerrado! Hora de voltar.' : `▶️ Intervalo ${row.idx+1} encerrado! Hora de voltar.`, 9000);
           });
         }
       }
     }
 
-    // ── Alerta de saída ──
-    const last = schedule[N-1];
-    const saidaMs = last.bEndMs_real || last.bEndMs_plan;
-    const remSaida = saidaMs - nowMs2;
+    // Alerta de saída
+    const remSaida = getSaidaMs() - nowMs2;
     if(remSaida <= 0 && remSaida > -8000){
       fireOnce('saida', ()=>{
-        playAlert();
+        playAlert(); setTimeout(()=>playAlert(), 700);
         toast('🎉 Hora de ir embora! Bata o ponto final.', 12000);
       });
     }
@@ -729,11 +792,35 @@
         toast('⚠️ Ative as notificações primeiro (banner amarelo acima).',5000);
         return;
       }
-      new Notification('🔔 Teste de notificação', {
-        body: 'Se você está vendo isso, as notificações funcionam! ✅',
-        icon: 'icon-192.png'
-      });
-      toast('✅ Notificação enviada! Verifique na barra do celular.',4000);
+      // No mobile, precisa usar o Service Worker para mostrar notificação
+      const dispararNotif = async () => {
+        try {
+          if(swReg && swReg.active){
+            // Manda pro SW disparar em 2 segundos
+            swReg.active.postMessage({
+              type: 'SCHEDULE_NOTIFICATIONS',
+              events: [{
+                fireAt: Date.now() + 2000,
+                tag: 'teste',
+                title: '🔔 Teste de notificação',
+                body: 'Se você está vendo isso, as notificações funcionam! ✅',
+                icon: 'icon-192.png'
+              }]
+            });
+            toast('✅ Notificação em 2 segundos! Minimize o app para ver.',5000);
+          } else {
+            // Fallback direto (funciona só no desktop)
+            new Notification('🔔 Teste de notificação', {
+              body: 'Se você está vendo isso, as notificações funcionam! ✅',
+              icon: 'icon-192.png'
+            });
+            toast('✅ Notificação enviada!',4000);
+          }
+        } catch(e){
+          toast('❌ Erro ao enviar notificação: '+e.message, 5000);
+        }
+      };
+      dispararNotif();
     }
   }
 
@@ -754,6 +841,7 @@
       document.getElementById('fixed-bottom').style.display='';
       document.getElementById('cd-bar').style.display='';
       document.getElementById('entrada-input').value=hhmm(entradaMin);
+      ativarWakeLock();
       agendarNotificacoes();
       renderAll();
       if(ticker) clearInterval(ticker);
