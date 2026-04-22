@@ -95,6 +95,22 @@
 
     #toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#1e3a5f;color:#fff;padding:12px 20px;border-radius:12px;font-size:.85rem;font-weight:600;z-index:200;display:none;max-width:340px;text-align:center;box-shadow:0 4px 16px #0004;}
 
+    /* Alarmes nativos */
+    .alarmes-section{border-top:1px solid #f0f2f5;padding:12px 16px 14px;}
+    .alarmes-header{font-size:.82rem;font-weight:700;color:#1e3a5f;margin-bottom:4px;display:flex;flex-direction:column;gap:2px;}
+    .alarmes-hint{font-size:.7rem;font-weight:400;color:#8899aa;}
+    .alarme-grid{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+    .btn-alarme{
+      display:flex;align-items:center;justify-content:space-between;
+      background:#f0f4ff;border:1px solid #c7d4f0;border-radius:10px;
+      padding:10px 14px;cursor:pointer;text-align:left;width:100%;
+      transition:background .15s;
+    }
+    .btn-alarme:hover{background:#dde8ff;}
+    .btn-alarme:active{background:#c7d4f0;}
+    .alarme-label{font-size:.78rem;color:#445566;}
+    .alarme-time{font-size:1rem;font-weight:800;color:#1e3a5f;}
+
     /* Painel de teste */
     #teste-panel{width:100%;max-width:480px;background:#fff;border-radius:16px;box-shadow:0 1px 5px #0001;overflow:hidden;margin-bottom:12px;display:none;}
     #teste-panel .sec-header{background:#fef3c7;}
@@ -160,6 +176,16 @@
       🍽️ Marque <strong>Almoço</strong> em qualquer intervalo para 30 min.<br>
       🕐 Use <strong>Ajustar</strong> se não saiu na hora exata.
     </div>
+
+    <!-- Alarmes nativos -->
+    <div class="alarmes-section">
+      <div class="alarmes-header">
+        ⏰ Criar alarmes no celular
+        <span class="alarmes-hint">Toque para abrir o Relógio com o horário preenchido</span>
+      </div>
+      <div id="alarmes-list"></div>
+    </div>
+
   </div>
 </div>
 
@@ -553,6 +579,7 @@
     renderSaida(nowMs2,nowM);
     renderCountdown(nowMs2,nowM);
     checkAlerts(nowMs2,nowM);
+    renderAlarmes();
   }
 
   function renderList(nowMs2){
@@ -744,6 +771,63 @@
 
   let toastT=null;
   function toast(msg,dur=4000){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(toastT); toastT=setTimeout(()=>t.style.display='none',dur); }
+
+  // ── Alarmes nativos ────────────────────────────────────────────────
+  function renderAlarmes(){
+    const container = document.getElementById('alarmes-list');
+    if(!container || schedule.length===0) return;
+    container.innerHTML='';
+    const grid = document.createElement('div');
+    grid.className='alarme-grid';
+
+    schedule.filter(r=>!r.isSaida).forEach(row=>{
+      // Início do intervalo
+      const ms = row.bStartMs_real || row.bStartMs_plan;
+      const label = row.isAlmoco ? `Almoço (${row.idx+1}°)` : `Intervalo ${row.idx+1}`;
+      grid.appendChild(criarBtnAlarme('🔔 '+label, ms));
+
+      // Fim do intervalo (volta)
+      const endMs = row.bEndMs_real || row.bEndMs_plan;
+      const endLabel = row.isAlmoco ? 'Volta do almoço' : `Volta — Intervalo ${row.idx+1}`;
+      grid.appendChild(criarBtnAlarme('▶️ '+endLabel, endMs));
+    });
+
+    // Saída
+    const saidaMs = getSaidaMs();
+    grid.appendChild(criarBtnAlarme('🚪 Saída', saidaMs));
+
+    container.appendChild(grid);
+  }
+
+  function criarBtnAlarme(label, ms){
+    const h = new Date(ms).getHours();
+    const m = new Date(ms).getMinutes();
+    const btn = document.createElement('button');
+    btn.className='btn-alarme';
+    btn.innerHTML=`
+      <span class="alarme-label">${label}</span>
+      <span class="alarme-time">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}</span>
+    `;
+    btn.onclick = () => abrirAlarme(h, m, label);
+    return btn;
+  }
+
+  function abrirAlarme(h, m, label){
+    // Android: intent de alarme via link especial
+    const msg = label.replace(/[^\w\s]/gi,'').trim();
+    // Tenta abrir app de relógio nativo via intent URL
+    const intentUrl = `intent://alarm#Intent;scheme=android-app;package=com.google.android.deskclock;S.hours=${h};S.minutes=${m};S.message=${encodeURIComponent(msg)};end`;
+    // Fallback: link genérico que funciona em qualquer Android
+    const alarmUrl = `clock://alarm?hour=${h}&minutes=${m}&message=${encodeURIComponent(msg)}`;
+
+    // Tenta o intent primeiro, com fallback
+    try {
+      window.location.href = intentUrl;
+    } catch(e) {
+      window.location.href = alarmUrl;
+    }
+    toast(`⏰ Abrindo alarme para ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}…`, 3000);
+  }
 
   // ── Painel de teste (3 cliques no logo) ────────────────────────────
   let tapCount=0, tapTimer=null;
