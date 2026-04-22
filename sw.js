@@ -1,5 +1,5 @@
 // Service Worker - Controle de Intervalos
-const CACHE = 'intervalos-v2';
+const CACHE = 'intervalos-v3';
 const FILES = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -19,43 +19,71 @@ self.addEventListener('fetch', e => {
   e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
 });
 
-// Timers de notificação
-const timers = [];
-
-function clearAll() {
-  timers.forEach(t => clearTimeout(t));
-  timers.length = 0;
-}
+// ── Eventos agendados (guardados no próprio SW) ──────────────────────
+let pendingEvents = [];
 
 self.addEventListener('message', e => {
   if (!e.data) return;
+
   if (e.data.type === 'SCHEDULE_NOTIFICATIONS') {
-    clearAll();
-    const now = Date.now();
-    (e.data.events || []).forEach(ev => {
-      const delay = ev.fireAt - now;
-      if (delay < 0) return;
-      const t = setTimeout(() => {
-        self.registration.showNotification(ev.title, {
-          body: ev.body,
-          icon: './icon-192.png',
-          badge: './icon-192.png',
-          vibrate: [300, 100, 300, 100, 300],
-          tag: ev.tag,
-          renotify: true,
-          requireInteraction: true,
-          data: { url: self.registration.scope }
-        });
-      }, delay);
-      timers.push(t);
-    });
+    pendingEvents = (e.data.events || []).filter(ev => ev.fireAt > Date.now());
+    // Agenda verificação periódica via sync se disponível, senão usa keepalive
+    scheduleCheck();
   }
+
   if (e.data.type === 'CLEAR_NOTIFICATIONS') {
-    clearAll();
+    pendingEvents = [];
+  }
+
+  if (e.data.type === 'PING') {
+    // Página mandou ping — aproveita pra verificar eventos
+    checkAndFire();
   }
 });
 
-// Clique na notificação → foca ou abre o app
+// Verifica e dispara eventos cujo horário já chegou
+function checkAndFire() {
+  const now = Date.now();
+  const remaining = [];
+  for (const ev of pendingEvents) {
+    if (ev.fireAt <= now) {
+      self.registration.showNotification(ev.title, {
+        body: ev.body,
+        icon: './icon-192.png',
+        badge: './icon-192.png',
+        vibrate: [300, 100, 300, 100, 300],
+        tag: ev.tag,
+        renotify: true,
+        requireInteraction: true,
+        data: { url: self.registration.scope }
+      });
+    } else {
+      remaining.push(ev);
+    }
+  }
+  pendingEvents = remaining;
+}
+
+function scheduleCheck() {
+  // Tenta usar Background Sync para acordar o SW
+  if ('sync' in self.registration) {
+    self.registration.sync.register('check-intervals').catch(() => {});
+  }
+}
+
+// Background Sync — acorda o SW periodicamente
+self.addEventListener('sync', e => {
+  if (e.tag === 'check-intervals') {
+    e.waitUntil(checkAndFire());
+  }
+});
+
+// Push vazio — também acorda o SW (se configurado)
+self.addEventListener('push', e => {
+  e.waitUntil(checkAndFire());
+});
+
+// Clique na notificação → abre/foca o app
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   const url = (e.notification.data && e.notification.data.url) || self.registration.scope;

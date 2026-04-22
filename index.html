@@ -433,6 +433,43 @@
     if(swReg && swReg.active) swReg.active.postMessage({ type:'CLEAR_NOTIFICATIONS' });
   }
 
+  // ── Ping periódico ao SW (mantém eventos mesmo em segundo plano) ───
+  // Enquanto a página está visível, manda ping a cada 30s
+  // Quando vai pra segundo plano, registra Background Sync para o SW acordar
+  let pingInterval = null;
+
+  function iniciarPing(){
+    if(pingInterval) clearInterval(pingInterval);
+    pingInterval = setInterval(() => {
+      if(swReg && swReg.active){
+        swReg.active.postMessage({ type: 'PING' });
+      }
+      // Registra sync periódico para o Android acordar o SW
+      if(swReg && 'sync' in swReg){
+        swReg.sync.register('check-intervals').catch(()=>{});
+      }
+    }, 30000); // a cada 30 segundos
+  }
+
+  function pararPing(){
+    if(pingInterval) clearInterval(pingInterval);
+    pingInterval = null;
+  }
+
+  // Quando vai pra segundo plano, registra sync para o SW ser acordado pelo Android
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'hidden'){
+      pararPing();
+      if(swReg && 'sync' in swReg){
+        swReg.sync.register('check-intervals').catch(()=>{});
+      }
+    } else {
+      iniciarPing();
+      // Ao voltar, manda ping imediato
+      if(swReg && swReg.active) swReg.active.postMessage({ type: 'PING' });
+    }
+  });
+
   // ── Calcular ───────────────────────────────────────────────────────
   function calcular(){
     const val=document.getElementById('entrada-input').value;
@@ -452,6 +489,7 @@
     document.getElementById('cd-bar').style.display='';
     salvar();
     agendarNotificacoes();
+    iniciarPing();
     renderAll();
     if(ticker) clearInterval(ticker);
     ticker=setInterval(()=>{ renderAll(); salvar(); },1000);
@@ -781,6 +819,7 @@
       document.getElementById('entrada-input').value=hhmm(entradaMin);
       ativarWakeLock();
       agendarNotificacoes();
+      iniciarPing();
       renderAll();
       if(ticker) clearInterval(ticker);
       ticker=setInterval(()=>{ renderAll(); salvar(); },1000);
