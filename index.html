@@ -169,6 +169,7 @@
   <div class="ov-sub" id="ov-work-sub">Intervalo às --:--</div>
   <button class="ov-btn" onclick="antecipарIntervaло()">▶ Iniciar intervalo agora</button>
   <button class="ov-btn-ghost" onclick="abrirAjusteOverlay()">🕐 Ajustar horário</button>
+  <button class="ov-btn-ghost" onclick="irParaLista()">← Ver intervalos</button>
 </div>
 
 <!-- ── OVERLAY INTERVALO ── -->
@@ -180,6 +181,7 @@
   <button class="ov-btn-almoco" id="ov-btn-almoco" onclick="toggleAlmocoOverlay()">🍽️ Marcar como almoço</button>
   <button class="ov-btn" onclick="voltarAoTrabalho()">▶ Voltei ao trabalho</button>
   <button class="ov-btn-ghost" onclick="abrirAjusteOverlay()">🕐 Ajustar horário</button>
+  <button class="ov-btn-ghost" onclick="irParaLista()">← Ver intervalos</button>
 </div>
 
 <!-- ── OVERLAY ALERTA (hora do intervalo / saída) ── -->
@@ -265,9 +267,24 @@ function beep(f, delay, dur, vol=0.6){
     o.stop(c.currentTime+delay+dur+0.05);
   }catch(e){}
 }
-function playAlert(){ beep(880,0,.25,.8); beep(880,.35,.25,.8); beep(1320,.70,.5,.8); }
-function playDone(){ beep(523,0,.2,.7); beep(659,.22,.2,.7); beep(784,.44,.2,.7); beep(1047,.66,.4,.7); }
-function playWarn(){ beep(660,0,.15,.7); beep(660,.25,.15,.7); }
+function playAlert(){
+  // 3 grupos de beeps ascendentes — mais longo e marcante
+  [0, 0.9, 1.8].forEach(offset => {
+    beep(880, offset,       .3, .9);
+    beep(1100, offset+.35, .3, .9);
+    beep(1320, offset+.70, .5, .9);
+  });
+}
+function playDone(){
+  // melodia de conclusão — 2 repetições
+  [0, 1.2].forEach(offset => {
+    beep(523, offset,       .25, .8);
+    beep(659, offset+.28,  .25, .8);
+    beep(784, offset+.56,  .25, .8);
+    beep(1047, offset+.84, .5,  .8);
+  });
+}
+function playWarn(){ beep(660,0,.2,.8); beep(660,.3,.2,.8); beep(660,.6,.2,.8); }
 function playTick(){ beep(660,0,.1,.5); }
 function vibrar(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 
@@ -561,6 +578,33 @@ function confirmarAlerta(){
   if(alertCallback){ alertCallback(); alertCallback=null; }
 }
 
+// ── VOLTAR PARA A LISTA (sem parar o contador) ───────────────────────────
+function irParaLista(){
+  // Esconde todos os overlays mas mantém os intervalos rodando em segundo plano
+  ['ov-work','ov-break','ov-alert'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  renderLista();
+  toast('Os contadores continuam rodando. Toque em qualquer intervalo para voltar.',5000);
+
+  // Botão flutuante para voltar ao overlay ativo
+  let fab=document.getElementById('fab-voltar');
+  if(!fab){
+    fab=document.createElement('button');
+    fab.id='fab-voltar';
+    fab.style.cssText='position:fixed;bottom:24px;right:20px;background:#1e3a5f;color:#fff;border:none;border-radius:16px;padding:14px 20px;font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px #0004;z-index:50;';
+    fab.onclick=voltarAoOverlay;
+    document.body.appendChild(fab);
+  }
+  fab.textContent = fase==='break' ? '⏳ Ver intervalo' : '⏱️ Ver trabalho';
+  fab.style.display='block';
+}
+
+function voltarAoOverlay(){
+  const fab=document.getElementById('fab-voltar');
+  if(fab) fab.style.display='none';
+  if(fase==='work') document.getElementById('ov-work').classList.add('show');
+  else if(fase==='break') document.getElementById('ov-break').classList.add('show');
+}
+
 // ── PARAR TODOS OS CONTADORES ────────────────────────────────────────────
 function pararTodosContadores(){
   if(workInterval){ clearInterval(workInterval); workInterval=null; }
@@ -694,6 +738,8 @@ function resetar(){
   fase='setup'; blocoAtual=0; intervaloAtual=0; firedAlerts=new Set();
   schedule=[];
   ['ov-work','ov-break','ov-alert'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  const fab=document.getElementById('fab-voltar');
+  if(fab) fab.style.display='none';
   document.getElementById('card-intervalos').style.display='none';
   document.getElementById('entrada-input').value='';
 }
