@@ -424,9 +424,13 @@ function iniciarContadorIntervalo(){
   fase='break';
   intervaloAtual=blocoAtual; // índice do intervalo corrente
 
-  // registra hora de início se não tiver
+  // registra hora de início se não tiver (preserva se já existe)
   if(breakStart[intervaloAtual]==null){
     breakStart[intervaloAtual]=nowMs();
+  }
+  // garante breakEnd limpo para recalcular a partir do início real + duração atual
+  if(breakEnd[intervaloAtual]==null){
+    // não faz nada — buildSchedule calcula: bEnd_real = bStart_real + dur*60000
   }
   schedule=buildSchedule();
   salvar();
@@ -511,16 +515,22 @@ function toggleAlmocoOverlay(){
   if(almocoIdx===intervaloAtual){
     almocoIdx=-1;
   } else {
-    // remove de qualquer outro
     almocoIdx=intervaloAtual;
   }
+  // limpa breakEnd para recalcular com nova duração
+  delete breakEnd[intervaloAtual];
   schedule=buildSchedule();
   salvar();
   atualizarBtnAlmoco();
-  // atualiza label e sub
+
+  // reinicia o countdown com a nova duração
+  pararTodosContadores();
   const row=schedule[intervaloAtual];
   document.getElementById('ov-break-label').textContent=row.isAlmoco?`Almoço — 30 min`:`Intervalo ${intervaloAtual+1} — 10 min`;
   document.getElementById('ov-break-sub').textContent=`Volta às ${msToHHMM(row.bEnd_real||row.bEnd_plan)}`;
+
+  // reinicia o intervalo com o novo tempo
+  iniciarContadorIntervalo();
   renderLista();
 }
 
