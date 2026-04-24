@@ -15,30 +15,27 @@
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;min-height:100vh;display:flex;flex-direction:column;align-items:center;}
 
-    /* ── HEADER ── */
     .header{width:100%;max-width:480px;background:#1e3a5f;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
     .header-left{display:flex;align-items:center;gap:10px;}
     .header h1{color:#fff;font-size:1.05rem;font-weight:700;}
     .btn-sair{background:#f5c842;color:#1e3a5f;border:none;border-radius:20px;padding:7px 16px;font-size:.8rem;font-weight:700;cursor:pointer;}
 
-    /* ── MAIN ── */
     .main{width:100%;max-width:480px;padding:14px 12px 40px;display:flex;flex-direction:column;gap:12px;}
     .card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 5px #0001;}
     .sec-header{background:#dde4f0;padding:10px 16px;font-size:.82rem;font-weight:700;color:#1e3a5f;}
 
-    /* ── ENTRADA ── */
     .entrada-body{padding:14px 16px;}
     .entrada-row{display:flex;gap:10px;align-items:center;}
     input[type="time"]{background:#1e3a5f;color:#fff;border:none;border-radius:10px;padding:10px 14px;font-size:1.4rem;font-weight:700;outline:none;cursor:pointer;width:148px;}
     .btn-calcular{flex:1;background:#1e3a5f;color:#fff;border:none;border-radius:10px;padding:12px;font-size:.9rem;font-weight:700;cursor:pointer;}
 
-    /* ── LISTA DE INTERVALOS ── */
     .int-list{padding:2px 0;}
     .int-row{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #f0f2f5;gap:10px;}
     .int-row:last-child{border-bottom:none;}
     .int-row.row-done{opacity:.5;}
     .int-row.row-active{background:#e8f5e9;}
     .int-row.row-due{background:#fff8e1;}
+    .int-row.row-skipped{opacity:.4;background:#f5f5f5;}
     .int-icon{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0;}
     .int-info{flex:1;}
     .int-name{font-size:.86rem;font-weight:600;color:#1e3a5f;}
@@ -48,38 +45,44 @@
     .b-active{background:#2e7d52;color:#fff;}
     .b-due{background:#e53e3e;color:#fff;}
     .b-future{background:#dde5f0;color:#445566;}
-    .b-work{background:#1e3a5f;color:#fff;}
+    .b-skipped{background:#e0e0e0;color:#888;}
 
-    /* botão almoço inline */
-    .btn-almoco-inline{background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:8px;padding:4px 10px;font-size:.7rem;font-weight:700;cursor:pointer;margin-top:6px;}
+    .btn-almoco-inline{background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:8px;padding:4px 10px;font-size:.7rem;font-weight:700;cursor:pointer;margin-top:6px;margin-right:4px;}
     .btn-almoco-inline.ativo{background:#ffc107;color:#1e3a5f;}
+    .btn-pular-inline{background:#f0f2f5;color:#888;border:1px solid #ccc;border-radius:8px;padding:4px 10px;font-size:.7rem;font-weight:700;cursor:pointer;margin-top:6px;}
+    .btn-pular-inline.ativo{background:#e0e0e0;color:#555;text-decoration:line-through;}
 
-    /* saída */
     .saida-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:2px solid #f0f2f5;}
     .saida-label{font-size:.88rem;font-weight:700;color:#1e3a5f;}
     .saida-label.alert{color:#c0392b;}
     .saida-value{font-size:1rem;font-weight:800;color:#1e3a5f;}
     .saida-value.alert{color:#c0392b;}
     .alerta-banner{background:#e53e3e;color:#fff;padding:8px 16px;font-size:.82rem;font-weight:700;display:none;text-align:center;}
-    .nota{font-size:.72rem;color:#8899aa;padding:8px 16px 12px;border-top:1px solid #f0f2f5;line-height:1.6;}
+    .nota{font-size:.72rem;color:#8899aa;padding:8px 16px 12px;border-top:1px solid #f0f2f5;line-height:1.7;}
 
-    /* ── OVERLAY DE COUNTDOWN (trabalho e intervalo) ── */
-    .overlay{display:none;position:fixed;inset:0;z-index:150;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:32px;}
+    /* saída info detalhada */
+    .saida-detalhe{font-size:.72rem;color:#8899aa;padding:2px 16px 10px;line-height:1.6;}
+
+    /* ── OVERLAYS ── */
+    .overlay{display:none;position:fixed;inset:0;z-index:150;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:32px;}
     .overlay.show{display:flex;}
     .ov-work{background:#1e3a5f;}
     .ov-break{background:#1a5f2e;}
-    .ov-alert{background:#8b0000;}
+    .ov-alert{background:#6b1a1a;}
 
-    .ov-label{font-size:.85rem;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.6);}
-    .ov-title{font-size:1.6rem;font-weight:800;color:#fff;line-height:1.2;}
+    .ov-label{font-size:.8rem;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.55);}
+    .ov-title{font-size:1.5rem;font-weight:800;color:#fff;line-height:1.2;}
     .ov-timer{font-size:5.5rem;font-weight:800;color:#fff;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-2px;transition:color .15s;}
     .ov-timer.tick{color:#f5c842;}
     .ov-sub{font-size:.8rem;color:rgba(255,255,255,.55);letter-spacing:1px;}
+    .ov-saida-info{font-size:.78rem;color:rgba(255,255,255,.5);letter-spacing:.5px;margin-top:-8px;}
 
-    .ov-btn{background:#fff;color:#1e3a5f;border:none;border-radius:16px;padding:18px 40px;font-size:1rem;font-weight:800;cursor:pointer;letter-spacing:.5px;}
+    .ov-btn{background:#fff;color:#1e3a5f;border:none;border-radius:16px;padding:16px 36px;font-size:.95rem;font-weight:800;cursor:pointer;}
     .ov-btn:active{opacity:.85;transform:scale(.97);}
-    .ov-btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.7);border-radius:12px;padding:12px 28px;font-size:.82rem;font-weight:600;cursor:pointer;letter-spacing:.5px;}
+    .ov-btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.75);border-radius:12px;padding:11px 24px;font-size:.82rem;font-weight:600;cursor:pointer;}
     .ov-btn-ghost:active{border-color:#fff;color:#fff;}
+    .ov-btn-danger{background:transparent;border:1px solid rgba(255,120,120,.5);color:rgba(255,160,160,.9);border-radius:12px;padding:11px 24px;font-size:.82rem;font-weight:600;cursor:pointer;}
+    .ov-btn-danger:active{border-color:#f88;color:#fff;}
     .ov-btn-almoco{background:#f5c842;color:#1e3a5f;border:none;border-radius:12px;padding:10px 22px;font-size:.8rem;font-weight:800;cursor:pointer;}
     .ov-btn-almoco.ativo{background:#ffc107;}
 
@@ -98,10 +101,8 @@
     .btn-confirm{flex:1;background:#1e3a5f;color:#fff;border:none;border-radius:10px;padding:11px;font-size:.88rem;font-weight:700;cursor:pointer;}
     .btn-cancel{flex:1;background:#f0f2f5;color:#445566;border:none;border-radius:10px;padding:11px;font-size:.88rem;font-weight:700;cursor:pointer;}
 
-    /* ── TOAST ── */
     #toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#1e3a5f;color:#fff;padding:12px 20px;border-radius:12px;font-size:.85rem;font-weight:600;z-index:300;display:none;max-width:340px;text-align:center;box-shadow:0 4px 16px #0004;}
 
-    /* ── PAINEL DE TESTE ── */
     #teste-panel{width:100%;max-width:480px;background:#fff;border-radius:16px;box-shadow:0 1px 5px #0001;overflow:hidden;display:none;}
     #teste-panel .sec-header{background:#fef3c7;color:#92400e;}
     .teste-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px;}
@@ -120,19 +121,16 @@
 </div>
 
 <div class="main">
-
-  <!-- PAINEL DE TESTE (3x no logo) -->
   <div id="teste-panel">
     <div class="sec-header">🧪 Testar sons</div>
     <div class="teste-grid">
-      <button class="btn-teste bt-som1" onclick="playAlert()">🔔 Início<br>intervalo</button>
-      <button class="btn-teste bt-som2" onclick="playDone()">✅ Fim<br>intervalo</button>
-      <button class="btn-teste bt-som3" onclick="playWarn()">⚠️ Aviso<br>2 min</button>
-      <button class="btn-teste bt-alerta" onclick="playAlert();setTimeout(playAlert,700)">🚪 Saída</button>
+      <button class="btn-teste bt-som1" onclick="playAlert()">🔔 Início intervalo</button>
+      <button class="btn-teste bt-som2" onclick="playDone()">✅ Fim intervalo</button>
+      <button class="btn-teste bt-som3" onclick="playWarn()">⚠️ Aviso 2 min</button>
+      <button class="btn-teste bt-alerta" onclick="playAlert();setTimeout(playAlert,900);setTimeout(playAlert,1800)">🚪 Saída</button>
     </div>
   </div>
 
-  <!-- ENTRADA -->
   <div class="card" id="card-entrada">
     <div class="sec-header">☰ Entrada</div>
     <div class="entrada-body">
@@ -143,7 +141,6 @@
     </div>
   </div>
 
-  <!-- INTERVALOS -->
   <div class="card" id="card-intervalos" style="display:none;">
     <div class="sec-header">🕐 Intervalos</div>
     <div class="int-list" id="int-list"></div>
@@ -152,47 +149,51 @@
       <div class="saida-label" id="saida-label">⏰ Saída prevista</div>
       <div class="saida-value" id="saida-value">--:--</div>
     </div>
+    <div class="saida-detalhe" id="saida-detalhe"></div>
     <div class="nota">
-      💡 O app toca automaticamente nos horários certos.<br>
-      🍽️ Marque <strong>Almoço</strong> em qualquer intervalo (30 min).<br>
+      💡 O app avisa e toca na hora certa.<br>
+      🍽️ Marque <strong>Almoço</strong> no intervalo correspondente (25 min contam).<br>
+      ⏭️ <strong>Pular</strong> um intervalo mantém o trabalho correndo — a saída se ajusta.<br>
       🕐 Use <strong>Ajustar</strong> se não saiu na hora exata.
     </div>
   </div>
-
 </div>
 
-<!-- ── OVERLAY TRABALHO ── -->
+<!-- OVERLAY TRABALHO -->
 <div class="overlay ov-work" id="ov-work">
   <div class="ov-label">Bloco de trabalho</div>
   <div class="ov-title" id="ov-work-title">1° bloco</div>
   <div class="ov-timer" id="ov-work-timer">50:00</div>
   <div class="ov-sub" id="ov-work-sub">Intervalo às --:--</div>
-  <button class="ov-btn" onclick="antecipарIntervaло()">▶ Iniciar intervalo agora</button>
+  <div class="ov-saida-info" id="ov-work-saida">Saída prevista: --:--</div>
+  <button class="ov-btn" onclick="anteciparIntervalo()">▶ Iniciar intervalo agora</button>
+  <button class="ov-btn-ghost" onclick="pularIntervaloAtual()">⏭ Pular próximo intervalo</button>
   <button class="ov-btn-ghost" onclick="abrirAjusteOverlay()">🕐 Ajustar horário</button>
   <button class="ov-btn-ghost" onclick="irParaLista()">← Ver intervalos</button>
 </div>
 
-<!-- ── OVERLAY INTERVALO ── -->
+<!-- OVERLAY INTERVALO -->
 <div class="overlay ov-break" id="ov-break">
   <div class="ov-label" id="ov-break-label">Intervalo 1 — 10 min</div>
   <div class="ov-title">Em intervalo</div>
   <div class="ov-timer" id="ov-break-timer">10:00</div>
   <div class="ov-sub" id="ov-break-sub">Volta às --:--</div>
+  <div class="ov-saida-info" id="ov-break-saida">Saída prevista: --:--</div>
   <button class="ov-btn-almoco" id="ov-btn-almoco" onclick="toggleAlmocoOverlay()">🍽️ Marcar como almoço</button>
   <button class="ov-btn" onclick="voltarAoTrabalho()">▶ Voltei ao trabalho</button>
   <button class="ov-btn-ghost" onclick="abrirAjusteOverlay()">🕐 Ajustar horário</button>
   <button class="ov-btn-ghost" onclick="irParaLista()">← Ver intervalos</button>
 </div>
 
-<!-- ── OVERLAY ALERTA (hora do intervalo / saída) ── -->
+<!-- OVERLAY ALERTA -->
 <div class="overlay ov-alert" id="ov-alert">
-  <div class="ov-label" id="ov-alert-label">Hora do intervalo!</div>
+  <div class="ov-label" id="ov-alert-label">Atenção</div>
   <div class="ov-title" id="ov-alert-title">⏰</div>
   <div class="ov-sub" id="ov-alert-sub"></div>
   <button class="ov-btn" id="ov-alert-btn" onclick="confirmarAlerta()">OK</button>
 </div>
 
-<!-- ── MODAL AJUSTE ── -->
+<!-- MODAL AJUSTE -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <h3 id="modal-titulo">Ajustar horário</h3>
@@ -217,37 +218,31 @@
 <div id="toast"></div>
 
 <script>
-// ── CONSTANTES ─────────────────────────────────────────────────────────
-const WORK  = 50;   // minutos de trabalho por bloco
-const SHORT = 10;   // minutos de intervalo normal
-const LUNCH = 30;   // minutos de almoço
-const N     = 5;    // 5 intervalos (6 blocos)
-const STORE = 'intervalos_state_v2';
+// ── CONSTANTES ──────────────────────────────────────────────────────────
+const WORK        = 50;   // min de trabalho por bloco
+const SHORT       = 10;   // min de intervalo normal
+const LUNCH_TOTAL = 30;   // min totais do almoço
+const LUNCH_COUNT = 25;   // min que contam como presença no almoço
+const N           = 5;    // 5 intervalos (6 blocos)
+const JORNADA_MS  = (6*60 + 10) * 60 * 1000; // 6h10 em ms
+const STORE       = 'intervalos_v3';
 
-// ── ESTADO ─────────────────────────────────────────────────────────────
-let entradaMin = 0;
-let almocoIdx  = -1;
-let breakStart = {}; // { idx: ms } hora real de início do intervalo
-let breakEnd   = {}; // { idx: ms } hora real de fim do intervalo
-let firedAlerts= new Set();
-let modalIdx   = -1;
-let modalCtx   = ''; // 'work' | 'break'
-
-// Fase atual: 'setup' | 'work' | 'break' | 'done'
-let fase = 'setup';
-let blocoAtual = 0;    // 0..5 (índice do bloco de trabalho em andamento)
-let intervaloAtual = 0; // 0..4 (índice do intervalo em andamento)
-
-// timers
-let workInterval  = null; // setInterval do countdown de trabalho
-let breakInterval = null; // setInterval do countdown de intervalo
-let alertCallback = null; // o que fazer ao confirmar o alerta
-
-// wake lock
-let wakeLock = null;
-
-// audio
-let audioCtx = null;
+// ── ESTADO ──────────────────────────────────────────────────────────────
+let entradaMin  = 0;
+let almocoIdx   = -1;       // qual intervalo é almoço (-1 = nenhum)
+let skipped     = {};       // { idx: true } intervalos pulados
+let breakStart  = {};       // { idx: ms } hora real de início
+let breakEnd    = {};       // { idx: ms } hora real de fim (ajustado manualmente)
+let firedAlerts = new Set();
+let modalIdx    = -1;
+let fase        = 'setup';  // 'setup' | 'work' | 'break' | 'done'
+let blocoAtual  = 0;        // 0..5
+let intervaloAtual = 0;     // 0..4
+let alertCallback  = null;
+let workInterval   = null;
+let breakInterval  = null;
+let wakeLock       = null;
+let audioCtx       = null;
 
 // ── AUDIO ───────────────────────────────────────────────────────────────
 function getCtx(){
@@ -255,7 +250,7 @@ function getCtx(){
   if(audioCtx.state==='suspended') audioCtx.resume();
   return audioCtx;
 }
-function beep(f, delay, dur, vol=0.6){
+function beep(f, delay, dur, vol=0.7){
   try{
     const c=getCtx(), o=c.createOscillator(), g=c.createGain();
     o.connect(g); g.connect(c.destination);
@@ -267,52 +262,146 @@ function beep(f, delay, dur, vol=0.6){
     o.stop(c.currentTime+delay+dur+0.05);
   }catch(e){}
 }
+
+// Alerta: 3 grupos de 3 beeps ascendentes (~2.8s)
 function playAlert(){
-  // 3 grupos de beeps ascendentes — mais longo e marcante
-  [0, 0.9, 1.8].forEach(offset => {
-    beep(880, offset,       .3, .9);
-    beep(1100, offset+.35, .3, .9);
-    beep(1320, offset+.70, .5, .9);
+  [0, 1.0, 2.0].forEach(off=>{
+    beep(880,  off+0.00, .35, 1.0);
+    beep(1100, off+0.40, .35, 1.0);
+    beep(1320, off+0.80, .55, 1.0);
   });
 }
+
+// Conclusão: melodia 2x (~2.5s)
 function playDone(){
-  // melodia de conclusão — 2 repetições
-  [0, 1.2].forEach(offset => {
-    beep(523, offset,       .25, .8);
-    beep(659, offset+.28,  .25, .8);
-    beep(784, offset+.56,  .25, .8);
-    beep(1047, offset+.84, .5,  .8);
+  [0, 1.3].forEach(off=>{
+    beep(523,  off+0.00, .28, .9);
+    beep(659,  off+0.30, .28, .9);
+    beep(784,  off+0.60, .28, .9);
+    beep(1047, off+0.90, .50, .9);
   });
 }
-function playWarn(){ beep(660,0,.2,.8); beep(660,.3,.2,.8); beep(660,.6,.2,.8); }
-function playTick(){ beep(660,0,.1,.5); }
+
+// Aviso 2 min: 4 beeps (~1.2s)
+function playWarn(){
+  [0, 0.30, 0.60, 0.90].forEach(off=> beep(750, off, .20, .85));
+}
+
+// Tick final (últimos 3s do intervalo)
+function playTick(){ beep(880, 0, .15, .7); }
+
 function vibrar(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 
-// ── WAKE LOCK ───────────────────────────────────────────────────────────
+// ── WAKE LOCK ────────────────────────────────────────────────────────────
 async function ativarWakeLock(){
   if(!('wakeLock' in navigator)) return;
-  try{
-    wakeLock = await navigator.wakeLock.request('screen');
-  }catch(e){}
+  try{ wakeLock = await navigator.wakeLock.request('screen'); }catch(e){}
 }
 function liberarWakeLock(){ try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){} }
 document.addEventListener('visibilitychange', ()=>{
   if(document.visibilityState==='visible' && fase!=='setup' && fase!=='done') ativarWakeLock();
 });
 
-// ── TEMPO ───────────────────────────────────────────────────────────────
+// ── TEMPO ────────────────────────────────────────────────────────────────
 function nowMs(){ return Date.now(); }
+function pad(n){ return String(n).padStart(2,'0'); }
 function hhmm(m){ m=((m%1440)+1440)%1440; return pad(Math.floor(m/60))+':'+pad(m%60); }
 function msToHHMM(ms){ const d=new Date(ms); return pad(d.getHours())+':'+pad(d.getMinutes()); }
 function hhmmToMin(s){ const[h,m]=s.split(':').map(Number); return h*60+m; }
 function todayMs(min){ const d=new Date(); d.setHours(Math.floor(min/60),min%60,0,0); return d.getTime(); }
 function fmtCountdown(ms){ const s=Math.max(0,Math.ceil(ms/1000)); return pad(Math.floor(s/60))+':'+pad(s%60); }
-function pad(n){ return String(n).padStart(2,'0'); }
 
-// ── PERSISTÊNCIA ────────────────────────────────────────────────────────
+// ── CÁLCULO DO SCHEDULE ──────────────────────────────────────────────────
+// Regra: Saída = Entrada + 5h trabalho + soma dos intervalos tirados
+//   - Intervalo normal tirado: +10 min
+//   - Almoço tirado: +25 min (de 30, só 25 contam)
+//   - Intervalo pulado: 0 min (trabalho corre direto)
+//
+// O schedule avança pelo cursor real (breakEnd real se ajustado,
+// senão breakStart+duração, senão horário planejado).
+
+function buildSchedule(){
+  const baseMs = todayMs(entradaMin);
+  let cursor   = baseMs;
+  const rows   = [];
+
+  for(let i=0;i<N;i++){
+    const isAlmoco  = (i === almocoIdx);
+    const isPulado  = !!skipped[i];
+    const durTotal  = isAlmoco ? LUNCH_TOTAL : SHORT;
+    const durContado= isAlmoco ? LUNCH_COUNT : (isPulado ? 0 : SHORT);
+
+    // início planejado = cursor + 50 min de trabalho
+    const bStart_plan = cursor + WORK * 60000;
+
+    // início real: só usa se estiver dentro de ±90min do planejado (evita horas absurdas)
+    const rawStart = breakStart[i];
+    const bStart_real = (rawStart != null && Math.abs(rawStart - bStart_plan) <= 90*60000)
+      ? rawStart : null;
+
+    let bEnd_real = null;
+    if(!isPulado && bStart_real != null){
+      const rawEnd = breakEnd[i];
+      // fim ajustado: só usa se estiver dentro de ±90min do fim planejado
+      const bEnd_plan_tmp = bStart_plan + durTotal * 60000;
+      bEnd_real = (rawEnd != null && Math.abs(rawEnd - bEnd_plan_tmp) <= 90*60000)
+        ? rawEnd
+        : bStart_real + durTotal * 60000;
+    }
+
+    const bEnd_plan = bStart_plan + (isPulado ? 0 : durTotal * 60000);
+
+    rows.push({ idx:i, bStart_plan, bEnd_plan, bStart_real, bEnd_real,
+                durTotal, durContado, isAlmoco, isPulado });
+
+    // cursor avança pelo fim real (se existe) ou fim planejado
+    if(isPulado){
+      cursor = bStart_plan;
+    } else {
+      cursor = bEnd_real != null ? bEnd_real : bEnd_plan;
+    }
+  }
+
+  // Saída = cursor + último bloco de trabalho (50 min)
+  const saidaMs = cursor + WORK * 60000;
+  rows.push({ idx:'saida', bStart_plan:saidaMs, isSaida:true });
+
+  return rows;
+}
+
+let schedule = [];
+
+// Calcula a saída prevista com base na jornada de 6h10
+// = entrada + 5h trabalho (6 blocos × 50min não é 5h... é 300min)
+// Na verdade: saída = buildSchedule()[last].bStart_plan
+// que já inclui todos os ajustes reais
+function getSaidaMs(){ return schedule[schedule.length-1].bStart_plan; }
+
+// Detalhe textual de quanto tempo foi contabilizado
+function getSaidaDetalhe(){
+  const tirados = schedule.filter(r=>!r.isSaida && !r.isPulado);
+  const pulados = schedule.filter(r=>!r.isSaida && r.isPulado);
+  let txt = `Trabalho: ${N_BLOCOS_EFETIVOS()}×50min`;
+  if(tirados.length>0){
+    const almoco = tirados.find(r=>r.isAlmoco);
+    const normais= tirados.filter(r=>!r.isAlmoco);
+    const partes=[];
+    if(normais.length) partes.push(`${normais.length}×10min`);
+    if(almoco)         partes.push(`almoço 25min`);
+    txt += ` + ${partes.join(' + ')}`;
+  }
+  if(pulados.length) txt += ` · ${pulados.length} intervalo(s) pulado(s)`;
+  return txt;
+}
+function N_BLOCOS_EFETIVOS(){ return N+1; } // sempre 6 blocos
+
+// ── PERSISTÊNCIA ─────────────────────────────────────────────────────────
 function salvar(){
   try{
-    localStorage.setItem(STORE, JSON.stringify({ entradaMin, almocoIdx, breakStart, breakEnd, fase, blocoAtual, intervaloAtual, firedAlerts:[...firedAlerts] }));
+    localStorage.setItem(STORE, JSON.stringify({
+      entradaMin, almocoIdx, skipped, breakStart, breakEnd,
+      fase, blocoAtual, intervaloAtual, firedAlerts:[...firedAlerts]
+    }));
   }catch(e){}
 }
 function carregar(){
@@ -320,9 +409,10 @@ function carregar(){
     const raw=localStorage.getItem(STORE);
     if(!raw) return false;
     const s=JSON.parse(raw);
-    // verifica se é do dia de hoje
-    if(new Date(todayMs(s.entradaMin)).toDateString()!==new Date().toDateString()){ localStorage.removeItem(STORE); return false; }
-    entradaMin=s.entradaMin; almocoIdx=s.almocoIdx;
+    if(new Date(todayMs(s.entradaMin)).toDateString()!==new Date().toDateString()){
+      localStorage.removeItem(STORE); return false;
+    }
+    entradaMin=s.entradaMin; almocoIdx=s.almocoIdx; skipped=s.skipped||{};
     breakStart=s.breakStart||{}; breakEnd=s.breakEnd||{};
     fase=s.fase||'setup'; blocoAtual=s.blocoAtual||0; intervaloAtual=s.intervaloAtual||0;
     firedAlerts=new Set(s.firedAlerts||[]);
@@ -331,36 +421,13 @@ function carregar(){
 }
 function limparStorage(){ try{ localStorage.removeItem(STORE); }catch(e){} }
 
-// ── SCHEDULE ────────────────────────────────────────────────────────────
-// Retorna array de 6 linhas (5 intervalos + saída)
-function buildSchedule(){
-  const rows=[];
-  const baseMs=todayMs(entradaMin);
-  let cur=baseMs;
-  for(let i=0;i<N;i++){
-    const isAlmoco=i===almocoIdx;
-    const dur=isAlmoco?LUNCH:SHORT;
-    const bStart_plan=cur+WORK*60000;
-    const bEnd_plan=bStart_plan+dur*60000;
-    const bStart_real=breakStart[i]!=null?breakStart[i]:null;
-    const bEnd_real=bStart_real!=null?(breakEnd[i]!=null?breakEnd[i]:bStart_real+dur*60000):null;
-    rows.push({idx:i,bStart_plan,bEnd_plan,bStart_real,bEnd_real,dur,isAlmoco});
-    cur=bEnd_real!=null?bEnd_real:bEnd_plan;
-  }
-  const saidaMs=cur+WORK*60000;
-  rows.push({idx:'saida',bStart_plan:saidaMs,bEnd_plan:saidaMs,bStart_real:null,bEnd_real:null,dur:0,isAlmoco:false,isSaida:true});
-  return rows;
-}
-
-let schedule=[];
-
-// ── CALCULAR ────────────────────────────────────────────────────────────
+// ── CALCULAR ─────────────────────────────────────────────────────────────
 function calcular(){
   const val=document.getElementById('entrada-input').value;
   if(!val){ alert('Informe o horário de entrada!'); return; }
-  getCtx(); beep(440,.0,.08,.3); // desbloqueia áudio
+  getCtx(); beep(440,0,.08,.3);
   entradaMin=hhmmToMin(val);
-  breakStart={}; breakEnd={}; almocoIdx=-1; firedAlerts=new Set();
+  breakStart={}; breakEnd={}; skipped={}; almocoIdx=-1; firedAlerts=new Set();
   blocoAtual=0; intervaloAtual=0; fase='work';
   schedule=buildSchedule();
   salvar();
@@ -370,62 +437,68 @@ function calcular(){
   iniciarContadorTrabalho();
 }
 
-// ── CONTADOR DE TRABALHO ─────────────────────────────────────────────────
+// ── CONTADOR DE TRABALHO ──────────────────────────────────────────────────
 function iniciarContadorTrabalho(){
   pararTodosContadores();
-  fase='work';
-  salvar();
+  fase='work'; salvar();
 
-  const row=schedule[blocoAtual]; // row do próximo intervalo
-  // O bloco de trabalho termina quando chegar bStart_plan do próximo intervalo
-  // Se é o último bloco (blocoAtual===5), termina na saída
-  const isSaidaBloco=(blocoAtual>=N);
+  // pula blocos onde o intervalo seguinte foi pulado (corre direto até o próximo não pulado ou saída)
+  // O targetMs é o início do próximo intervalo NÃO pulado, ou a saída
+  let targetIdx = blocoAtual; // índice do intervalo alvo
+  while(targetIdx < N && skipped[targetIdx]) targetIdx++;
 
-  const targetMs = isSaidaBloco
-    ? schedule[schedule.length-1].bStart_plan
-    : schedule[blocoAtual].bStart_plan;
+  const isSaida = (targetIdx >= N);
+  schedule = buildSchedule();
+  const targetMs = isSaida
+    ? getSaidaMs()
+    : schedule[targetIdx].bStart_plan;
 
-  // mostra overlay de trabalho
-  const ovWork=document.getElementById('ov-work');
-  ovWork.classList.add('show');
+  // mostra overlay
+  document.getElementById('ov-work').classList.add('show');
   document.getElementById('ov-break').classList.remove('show');
   document.getElementById('ov-alert').classList.remove('show');
 
-  const titulo = isSaidaBloco ? `Último bloco (${blocoAtual+1}°)` : `${blocoAtual+1}° bloco de trabalho`;
-  document.getElementById('ov-work-title').textContent=titulo;
-  document.getElementById('ov-work-sub').textContent= isSaidaBloco
-    ? `Saída às ${msToHHMM(targetMs)}`
-    : `Intervalo ${blocoAtual+1} às ${msToHHMM(targetMs)}`;
+  const titulo = `${blocoAtual+1}° bloco de trabalho`;
+  document.getElementById('ov-work-title').textContent = titulo;
+  atualizarSubWork(targetMs, isSaida, targetIdx);
 
-  // atualiza timer a cada segundo
-  workInterval=setInterval(()=>{
-    const rem=targetMs-nowMs();
-    const timerEl=document.getElementById('ov-work-timer');
-    timerEl.textContent=fmtCountdown(rem);
+  // botão pular: mostra o índice do próximo intervalo
+  // (já feito no HTML, só atualiza texto)
 
-    // pisca nos últimos 60s
+  workInterval = setInterval(()=>{
+    const rem = targetMs - nowMs();
+    const timerEl = document.getElementById('ov-work-timer');
+    timerEl.textContent = fmtCountdown(rem);
+
     if(rem>0 && rem<=60000) timerEl.classList.add('tick');
     else timerEl.classList.remove('tick');
 
-    // toca aviso 2 min antes
+    // aviso 2 min
     if(rem>0 && rem<=120000){
       fireOnce('work_warn_'+blocoAtual, ()=>{
-        playWarn(); vibrar([100,50,100]);
-        const isSaidaBloco2=(blocoAtual>=N);
-        toast(isSaidaBloco2?'⚠️ 2 min para a saída!':'⚠️ 2 min para o intervalo '+(blocoAtual+1)+'!', 6000);
+        playWarn(); vibrar([100,50,100,50,100]);
+        toast(isSaida ? '⚠️ 2 min para a saída!' : `⚠️ 2 min para o Intervalo ${targetIdx+1}!`, 6000);
       });
     }
 
-    // hora do intervalo/saída
     if(rem<=0){
       pararTodosContadores();
-      if(isSaidaBloco){
-        mostrarAlerta('🎉 Hora de ir embora!', 'Bata o ponto final. Bom descanso!', '', ()=>{ fase='done'; salvar(); renderLista(); });
-        playAlert(); setTimeout(playAlert,800); vibrar([300,100,300,100,400]);
+      timerEl.classList.remove('tick');
+      if(isSaida){
+        playAlert(); setTimeout(playAlert,900); setTimeout(playAlert,1800);
+        vibrar([400,100,400,100,600]);
+        mostrarAlerta('🎉 Hora de ir embora!', 'Bata o ponto final. Bom descanso!', 'OK!', ()=>{
+          fase='done'; salvar(); renderLista();
+          document.getElementById('ov-alert').classList.remove('show');
+        });
       } else {
-        const label=schedule[blocoAtual].isAlmoco?'Almoço':'Intervalo '+pad(blocoAtual+1);
-        mostrarAlerta('🔔 '+label+'!', 'Clique OK quando sair.', '', ()=>{ iniciarContadorIntervalo(); });
-        playAlert(); vibrar([200,100,200,100,300]);
+        blocoAtual = targetIdx; // atualiza para o intervalo correto
+        playAlert(); playAlert();
+        vibrar([300,100,300,100,400]);
+        const label = schedule[targetIdx].isAlmoco ? 'Almoço' : `Intervalo ${targetIdx+1}`;
+        mostrarAlerta(`🔔 ${label}!`, 'Clique OK quando sair.', 'Saí agora ▶', ()=>{
+          iniciarContadorIntervalo();
+        });
       }
       renderLista();
     }
@@ -435,60 +508,61 @@ function iniciarContadorTrabalho(){
   renderLista();
 }
 
-// ── CONTADOR DE INTERVALO ────────────────────────────────────────────────
+function atualizarSubWork(targetMs, isSaida, targetIdx){
+  document.getElementById('ov-work-sub').textContent = isSaida
+    ? `Saída às ${msToHHMM(targetMs)}`
+    : `Intervalo ${targetIdx+1} às ${msToHHMM(targetMs)}`;
+  document.getElementById('ov-work-saida').textContent = `Saída prevista: ${msToHHMM(getSaidaMs())}`;
+}
+
+// ── CONTADOR DE INTERVALO ─────────────────────────────────────────────────
 function iniciarContadorIntervalo(){
   pararTodosContadores();
   fase='break';
-  intervaloAtual=blocoAtual; // índice do intervalo corrente
+  intervaloAtual = blocoAtual;
 
-  // registra hora de início se não tiver (preserva se já existe)
   if(breakStart[intervaloAtual]==null){
-    breakStart[intervaloAtual]=nowMs();
+    breakStart[intervaloAtual] = nowMs();
   }
-  // garante breakEnd limpo para recalcular a partir do início real + duração atual
-  if(breakEnd[intervaloAtual]==null){
-    // não faz nada — buildSchedule calcula: bEnd_real = bStart_real + dur*60000
-  }
-  schedule=buildSchedule();
+  // limpa breakEnd se não foi ajustado manualmente (para recalcular)
+  schedule = buildSchedule();
   salvar();
 
-  const row=schedule[intervaloAtual];
-  const targetMs=row.bEnd_real; // fim calculado a partir do início real
+  const row = schedule[intervaloAtual];
+  const targetMs = row.bEnd_real || row.bEnd_plan;
 
   document.getElementById('ov-work').classList.remove('show');
   document.getElementById('ov-alert').classList.remove('show');
-  const ovBreak=document.getElementById('ov-break');
-  ovBreak.classList.add('show');
+  document.getElementById('ov-break').classList.add('show');
 
-  const label=row.isAlmoco?`Almoço — 30 min`:`Intervalo ${intervaloAtual+1} — 10 min`;
-  document.getElementById('ov-break-label').textContent=label;
-  document.getElementById('ov-break-sub').textContent=`Volta às ${msToHHMM(targetMs)}`;
+  const label = row.isAlmoco ? `Almoço — 30 min (25 contam)` : `Intervalo ${intervaloAtual+1} — 10 min`;
+  document.getElementById('ov-break-label').textContent = label;
+  document.getElementById('ov-break-sub').textContent = `Volta às ${msToHHMM(targetMs)}`;
+  document.getElementById('ov-break-saida').textContent = `Saída prevista: ${msToHHMM(getSaidaMs())}`;
   atualizarBtnAlmoco();
 
-  let warnFired=false;
+  let warnFired = false;
 
-  breakInterval=setInterval(()=>{
-    const rem=targetMs-nowMs();
-    const timerEl=document.getElementById('ov-break-timer');
-    timerEl.textContent=fmtCountdown(rem);
+  breakInterval = setInterval(()=>{
+    const rem = targetMs - nowMs();
+    const timerEl = document.getElementById('ov-break-timer');
+    timerEl.textContent = fmtCountdown(rem);
 
-    // últimos 3s piscam e tocam tick
     if(rem>0 && rem<=3000){ timerEl.classList.add('tick'); playTick(); vibrar(60); }
     else timerEl.classList.remove('tick');
 
-    // aviso 2 min antes
     if(rem>0 && rem<=120000 && !warnFired){
       warnFired=true;
-      playWarn(); vibrar([100,50,100]);
-      toast('⚠️ 2 min para fim do intervalo!',5000);
+      playWarn(); vibrar([100,50,100,50,100]);
+      const lbl = row.isAlmoco ? 'almoço' : `intervalo ${intervaloAtual+1}`;
+      toast(`⚠️ 2 min para fim do ${lbl}!`, 6000);
     }
 
-    // fim do intervalo
     if(rem<=0){
       pararTodosContadores();
       timerEl.classList.remove('tick');
-      playDone(); vibrar([200,100,400]);
-      mostrarAlerta('▶️ Fim do intervalo!', 'Hora de voltar ao trabalho.', 'Confirmar volta', ()=>{
+      playDone(); vibrar([200,100,200,100,400]);
+      mostrarAlerta('▶️ Fim do intervalo!', 'Hora de voltar ao trabalho.', 'Voltei ▶', ()=>{
         voltarAoTrabalho();
       });
       renderLista();
@@ -499,54 +573,68 @@ function iniciarContadorIntervalo(){
   renderLista();
 }
 
-// ── AÇÕES DO OVERLAY ─────────────────────────────────────────────────────
+// ── AÇÕES ─────────────────────────────────────────────────────────────────
 
-// Usuário antecipou o início do intervalo (clicou antes do timer zerar)
-function antecipарIntervaло(){
+function anteciparIntervalo(){
   pararTodosContadores();
   document.getElementById('ov-work').classList.remove('show');
+  // descobre qual é o próximo intervalo não pulado
+  let idx = blocoAtual;
+  while(idx < N && skipped[idx]) idx++;
+  if(idx >= N){
+    // era a saída — não tem intervalo para antecipar
+    return;
+  }
+  blocoAtual = idx;
   iniciarContadorIntervalo();
 }
 
-// Usuário voltou ao trabalho (clicou no overlay de intervalo)
+function pularIntervaloAtual(){
+  // Pula o próximo intervalo (o que seria disparado ao fim do bloco atual)
+  let idx = blocoAtual;
+  while(idx < N && skipped[idx]) idx++;
+  if(idx >= N) return; // nada a pular
+  skipped[idx] = true;
+  schedule = buildSchedule();
+  salvar();
+  renderLista();
+  // atualiza o sub do overlay de trabalho
+  let nextIdx = idx+1;
+  while(nextIdx < N && skipped[nextIdx]) nextIdx++;
+  const isSaida2 = (nextIdx >= N);
+  const targetMs2 = isSaida2 ? getSaidaMs() : schedule[nextIdx].bStart_plan;
+  atualizarSubWork(targetMs2, isSaida2, nextIdx);
+  toast(`⏭ Intervalo ${idx+1} pulado. Saída: ${msToHHMM(getSaidaMs())}`, 4000);
+}
+
 function voltarAoTrabalho(){
   pararTodosContadores();
   document.getElementById('ov-break').classList.remove('show');
   document.getElementById('ov-alert').classList.remove('show');
 
-  // registra fim do intervalo se não estiver registrado
   if(breakEnd[intervaloAtual]==null){
-    breakEnd[intervaloAtual]=nowMs();
+    breakEnd[intervaloAtual] = nowMs();
   }
-  schedule=buildSchedule();
-
-  blocoAtual=intervaloAtual+1; // avança para o próximo bloco
-  fase='work';
+  schedule = buildSchedule();
+  blocoAtual = intervaloAtual + 1;
+  fase = 'work';
   salvar();
   renderLista();
   iniciarContadorTrabalho();
 }
 
-// Toggle almoço durante intervalo
 function toggleAlmocoOverlay(){
-  if(almocoIdx===intervaloAtual){
-    almocoIdx=-1;
-  } else {
-    almocoIdx=intervaloAtual;
-  }
-  // limpa breakEnd para recalcular com nova duração
-  delete breakEnd[intervaloAtual];
-  schedule=buildSchedule();
+  almocoIdx = (almocoIdx===intervaloAtual) ? -1 : intervaloAtual;
+  delete breakEnd[intervaloAtual]; // recalcula fim com nova duração
+  schedule = buildSchedule();
   salvar();
   atualizarBtnAlmoco();
-
-  // reinicia o countdown com a nova duração
   pararTodosContadores();
-  const row=schedule[intervaloAtual];
-  document.getElementById('ov-break-label').textContent=row.isAlmoco?`Almoço — 30 min`:`Intervalo ${intervaloAtual+1} — 10 min`;
-  document.getElementById('ov-break-sub').textContent=`Volta às ${msToHHMM(row.bEnd_real||row.bEnd_plan)}`;
-
-  // reinicia o intervalo com o novo tempo
+  const row = schedule[intervaloAtual];
+  document.getElementById('ov-break-label').textContent =
+    row.isAlmoco ? `Almoço — 30 min (25 contam)` : `Intervalo ${intervaloAtual+1} — 10 min`;
+  document.getElementById('ov-break-sub').textContent = `Volta às ${msToHHMM(row.bEnd_real||row.bEnd_plan)}`;
+  document.getElementById('ov-break-saida').textContent = `Saída prevista: ${msToHHMM(getSaidaMs())}`;
   iniciarContadorIntervalo();
   renderLista();
 }
@@ -554,15 +642,12 @@ function toggleAlmocoOverlay(){
 function atualizarBtnAlmoco(){
   const btn=document.getElementById('ov-btn-almoco');
   if(almocoIdx===intervaloAtual){
-    btn.textContent='🍽️ Almoço marcado ✓';
-    btn.classList.add('ativo');
+    btn.textContent='🍽️ Almoço marcado ✓'; btn.classList.add('ativo');
   } else {
-    btn.textContent='🍽️ Marcar como almoço';
-    btn.classList.remove('ativo');
+    btn.textContent='🍽️ Marcar como almoço'; btn.classList.remove('ativo');
   }
 }
 
-// Mostrar overlay de alerta (entre fases)
 function mostrarAlerta(titulo, sub, btnTxt, cb){
   alertCallback=cb;
   document.getElementById('ov-work').classList.remove('show');
@@ -572,20 +657,15 @@ function mostrarAlerta(titulo, sub, btnTxt, cb){
   document.getElementById('ov-alert-btn').textContent=btnTxt||'OK';
   document.getElementById('ov-alert').classList.add('show');
 }
-
 function confirmarAlerta(){
   document.getElementById('ov-alert').classList.remove('show');
   if(alertCallback){ alertCallback(); alertCallback=null; }
 }
 
-// ── VOLTAR PARA A LISTA (sem parar o contador) ───────────────────────────
 function irParaLista(){
-  // Esconde todos os overlays mas mantém os intervalos rodando em segundo plano
   ['ov-work','ov-break','ov-alert'].forEach(id=>document.getElementById(id).classList.remove('show'));
   renderLista();
-  toast('Os contadores continuam rodando. Toque em qualquer intervalo para voltar.',5000);
-
-  // Botão flutuante para voltar ao overlay ativo
+  toast('Contadores rodando. Toque no botão flutuante para voltar.',4000);
   let fab=document.getElementById('fab-voltar');
   if(!fab){
     fab=document.createElement('button');
@@ -597,7 +677,6 @@ function irParaLista(){
   fab.textContent = fase==='break' ? '⏳ Ver intervalo' : '⏱️ Ver trabalho';
   fab.style.display='block';
 }
-
 function voltarAoOverlay(){
   const fab=document.getElementById('fab-voltar');
   if(fab) fab.style.display='none';
@@ -605,62 +684,42 @@ function voltarAoOverlay(){
   else if(fase==='break') document.getElementById('ov-break').classList.add('show');
 }
 
-// ── PARAR TODOS OS CONTADORES ────────────────────────────────────────────
-function pararTodosContadores(){
-  if(workInterval){ clearInterval(workInterval); workInterval=null; }
-  if(breakInterval){ clearInterval(breakInterval); breakInterval=null; }
-}
-
-// ── AJUSTE MANUAL ────────────────────────────────────────────────────────
+// ── AJUSTE MANUAL ─────────────────────────────────────────────────────────
 function abrirAjusteOverlay(){
-  // Descobre qual intervalo está em contexto
-  const idx = (fase==='break') ? intervaloAtual : blocoAtual;
-  openModal(idx);
+  openModal(fase==='break' ? intervaloAtual : blocoAtual);
 }
-
 function openModal(idx){
   if(idx<0||idx>=N) return;
   modalIdx=idx;
   const row=schedule[idx];
-  // início
   const refStart=breakStart[idx]!=null?new Date(breakStart[idx]):new Date(row.bStart_plan);
   document.getElementById('modal-start').value=pad(refStart.getHours())+':'+pad(refStart.getMinutes());
-  // fim
-  const refEnd=breakEnd[idx]!=null?new Date(breakEnd[idx]):breakStart[idx]!=null?new Date(breakStart[idx]+row.dur*60000):new Date(row.bEnd_plan);
+  const refEnd=breakEnd[idx]!=null?new Date(breakEnd[idx]):breakStart[idx]!=null?new Date(breakStart[idx]+row.durTotal*60000):new Date(row.bEnd_plan);
   document.getElementById('modal-end').value=pad(refEnd.getHours())+':'+pad(refEnd.getMinutes());
   document.getElementById('modal-titulo').textContent='Ajustar intervalo '+(idx+1);
-  document.getElementById('modal-desc').textContent=`Corrija os horários do ${row.isAlmoco?'almoço':'intervalo '+(idx+1)} (${row.dur} min):`;
+  document.getElementById('modal-desc').textContent=`Corrija os horários do ${row.isAlmoco?'almoço':'intervalo '+(idx+1)}:`;
   document.getElementById('modal').classList.add('open');
 }
-
 function closeModal(){ document.getElementById('modal').classList.remove('open'); modalIdx=-1; }
-
 function confirmAjuste(){
   const vs=document.getElementById('modal-start').value;
   const ve=document.getElementById('modal-end').value;
   if(!vs||!ve){ alert('Preencha início e fim.'); return; }
   breakStart[modalIdx]=todayMs(hhmmToMin(vs));
   breakEnd[modalIdx]=todayMs(hhmmToMin(ve));
-  // se estamos no intervalo desse idx, reinicia o contador
+  schedule=buildSchedule(); salvar(); closeModal();
   if(fase==='break' && intervaloAtual===modalIdx){
     pararTodosContadores();
-    schedule=buildSchedule();
-    salvar();
-    closeModal();
-    // reinicia countdown com novo horário
     const row=schedule[modalIdx];
-    document.getElementById('ov-break-sub').textContent=`Volta às ${msToHHMM(row.bEnd_real)}`;
+    document.getElementById('ov-break-sub').textContent=`Volta às ${msToHHMM(row.bEnd_real||row.bEnd_plan)}`;
+    document.getElementById('ov-break-saida').textContent=`Saída prevista: ${msToHHMM(getSaidaMs())}`;
     iniciarContadorIntervalo();
-  } else {
-    schedule=buildSchedule();
-    salvar();
-    closeModal();
   }
   renderLista();
-  toast(`✅ Intervalo ${modalIdx+1}: ${vs} – ${ve}`, 3000);
+  toast(`✅ Intervalo ${modalIdx+1}: ${vs} – ${ve}. Saída: ${msToHHMM(getSaidaMs())}`, 4000);
 }
 
-// ── RENDER LISTA ─────────────────────────────────────────────────────────
+// ── RENDER LISTA ──────────────────────────────────────────────────────────
 function renderLista(){
   schedule=buildSchedule();
   const now=nowMs();
@@ -668,75 +727,91 @@ function renderLista(){
   list.innerHTML='';
 
   schedule.filter(r=>!r.isSaida).forEach(row=>{
-    const started=row.bStart_real!=null;
-    const done=started && row.bEnd_real!=null && row.bEnd_real<=now;
-    const running=started && !done;
-    const due=!started && now>=row.bStart_plan;
-    const isCurrent=(fase==='break' && intervaloAtual===row.idx);
+    const started  = row.bStart_real!=null;
+    const done     = started && row.bEnd_real!=null && row.bEnd_real<=now;
+    const running  = started && !done;
+    const due      = !started && !row.isPulado && now>=row.bStart_plan;
+    const isCur    = fase==='break' && intervaloAtual===row.idx;
 
     const el=document.createElement('div');
-    el.className='int-row'+(done?' row-done':isCurrent?' row-active':due?' row-due':'');
+    el.className='int-row'+(row.isPulado?' row-skipped':done?' row-done':isCur?' row-active':due?' row-due':'');
 
     const icon=document.createElement('div');
     icon.className='int-icon';
-    icon.textContent=done?'✅':isCurrent?'⏳':row.isAlmoco?'🍽️':due?'🔔':'🔕';
+    icon.textContent=row.isPulado?'⏭':done?'✅':isCur?'⏳':row.isAlmoco?'🍽️':due?'🔔':'🔕';
 
     const info=document.createElement('div');
     info.className='int-info';
+
     const name=document.createElement('div');
     name.className='int-name';
-    name.textContent=row.isAlmoco?`${row.idx+1}° Intervalo — Almoço 🍽️`:`${row.idx+1}° Intervalo`;
+    let nomeLabel = row.isAlmoco ? `${row.idx+1}° — Almoço 🍽️` : `${row.idx+1}° Intervalo`;
+    if(row.isPulado) nomeLabel += ' (pulado)';
+    name.textContent=nomeLabel;
+
     const times=document.createElement('div');
     times.className='int-times';
-    if(started){
+    if(started && !row.isPulado){
       times.textContent=`${msToHHMM(row.bStart_real)} – ${row.bEnd_real?msToHHMM(row.bEnd_real):'--:--'}  (prev: ${msToHHMM(row.bStart_plan)}–${msToHHMM(row.bEnd_plan)})`;
     } else {
-      times.textContent=`${msToHHMM(row.bStart_plan)} – ${msToHHMM(row.bEnd_plan)}`;
+      times.textContent = row.isPulado ? `Previsto: ${msToHHMM(row.bStart_plan)}` : `${msToHHMM(row.bStart_plan)} – ${msToHHMM(row.bEnd_plan)}`;
     }
     info.appendChild(name);
     info.appendChild(times);
 
-    // botão almoço (só em futuros não iniciados)
-    if(!done && !isCurrent){
+    // botões inline (só para futuros não iniciados)
+    if(!done && !isCur && !row.isPulado){
       const btnAl=document.createElement('button');
       btnAl.className='btn-almoco-inline'+(row.isAlmoco?' ativo':'');
       btnAl.textContent=row.isAlmoco?'🍽️ Almoço ✓':'🍽️ Almoço?';
-      btnAl.onclick=()=>{ almocoIdx=(almocoIdx===row.idx)?-1:row.idx; schedule=buildSchedule(); salvar(); renderLista(); };
+      btnAl.onclick=()=>{
+        almocoIdx=(almocoIdx===row.idx)?-1:row.idx;
+        schedule=buildSchedule(); salvar(); renderLista();
+      };
       info.appendChild(btnAl);
+    }
+    // botão desfazer pular
+    if(row.isPulado){
+      const btnUp=document.createElement('button');
+      btnUp.className='btn-pular-inline';
+      btnUp.textContent='↩ Desfazer pulo';
+      btnUp.onclick=()=>{ delete skipped[row.idx]; schedule=buildSchedule(); salvar(); renderLista(); toast('Intervalo restaurado.',2000); };
+      info.appendChild(btnUp);
     }
 
     const badge=document.createElement('div');
     badge.className='badge';
-    if(done){ badge.className+=' b-done'; badge.textContent='✅ OK'; }
-    else if(isCurrent){ badge.className+=' b-active'; badge.textContent='Em pausa'; }
+    if(row.isPulado){ badge.className+=' b-skipped'; badge.textContent='pulado'; }
+    else if(done){ badge.className+=' b-done'; badge.textContent='✅ OK'; }
+    else if(isCur){ badge.className+=' b-active'; badge.textContent='em pausa'; }
     else if(due){ badge.className+=' b-due'; badge.textContent='⏰ Agora!'; }
-    else{ badge.className+=' b-future'; badge.textContent=`${row.dur} min`; }
+    else{ badge.className+=' b-future'; badge.textContent=`${row.durTotal} min`; }
 
     el.appendChild(icon); el.appendChild(info); el.appendChild(badge);
     list.appendChild(el);
   });
 
   // saída
-  const saida=schedule[schedule.length-1];
-  const saidaEl=document.getElementById('saida-value');
-  saidaEl.textContent=msToHHMM(saida.bStart_plan);
-  const passou=now>=saida.bStart_plan;
+  const saidaMs=getSaidaMs();
+  const passou=now>=saidaMs;
+  document.getElementById('saida-value').textContent=msToHHMM(saidaMs);
   document.getElementById('alerta-banner').style.display=passou?'block':'none';
   document.getElementById('saida-label').className='saida-label'+(passou?' alert':'');
-  saidaEl.className='saida-value'+(passou?' alert':'');
+  document.getElementById('saida-value').className='saida-value'+(passou?' alert':'');
+  document.getElementById('saida-detalhe').textContent=getSaidaDetalhe();
 }
 
-// ── FIREONCE ─────────────────────────────────────────────────────────────
-function fireOnce(key, fn){ if(firedAlerts.has(key)) return; firedAlerts.add(key); fn(); }
+// ── UTILS ─────────────────────────────────────────────────────────────────
+function fireOnce(key,fn){ if(firedAlerts.has(key)) return; firedAlerts.add(key); fn(); }
+function pararTodosContadores(){
+  if(workInterval){ clearInterval(workInterval); workInterval=null; }
+  if(breakInterval){ clearInterval(breakInterval); breakInterval=null; }
+}
 
-// ── RESETAR ──────────────────────────────────────────────────────────────
 function resetar(){
-  pararTodosContadores();
-  liberarWakeLock();
-  limparStorage();
-  entradaMin=0; almocoIdx=-1; breakStart={}; breakEnd={};
-  fase='setup'; blocoAtual=0; intervaloAtual=0; firedAlerts=new Set();
-  schedule=[];
+  pararTodosContadores(); liberarWakeLock(); limparStorage();
+  entradaMin=0; almocoIdx=-1; skipped={}; breakStart={}; breakEnd={};
+  fase='setup'; blocoAtual=0; intervaloAtual=0; firedAlerts=new Set(); schedule=[];
   ['ov-work','ov-break','ov-alert'].forEach(id=>document.getElementById(id).classList.remove('show'));
   const fab=document.getElementById('fab-voltar');
   if(fab) fab.style.display='none';
@@ -744,46 +819,39 @@ function resetar(){
   document.getElementById('entrada-input').value='';
 }
 
-// ── TOAST ─────────────────────────────────────────────────────────────────
 let toastT=null;
 function toast(msg,dur=4000){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(toastT); toastT=setTimeout(()=>t.style.display='none',dur); }
 
-// ── LOGO TAP (painel de teste) ────────────────────────────────────────────
-let tapCount=0, tapTimer=null;
+let tapCount=0,tapTimer=null;
 function tapLogo(){
-  tapCount++;
-  clearTimeout(tapTimer);
+  tapCount++; clearTimeout(tapTimer);
   tapTimer=setTimeout(()=>{ tapCount=0; },800);
-  if(tapCount>=3){
-    tapCount=0;
-    const p=document.getElementById('teste-panel');
-    p.style.display=p.style.display==='none'||p.style.display===''?'block':'none';
-    if(p.style.display==='block') toast('🧪 Modo de teste ativado!',2000);
-  }
+  if(tapCount>=3){ tapCount=0; const p=document.getElementById('teste-panel'); p.style.display=p.style.display==='none'||p.style.display===''?'block':'none'; }
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────
 window.onload=()=>{
   const d=new Date();
   document.getElementById('entrada-input').value=pad(d.getHours())+':'+pad(d.getMinutes());
-
   if(carregar()){
     schedule=buildSchedule();
     document.getElementById('card-intervalos').style.display='';
     document.getElementById('entrada-input').value=hhmm(entradaMin);
     renderLista();
     ativarWakeLock();
+    // limpa breakStart/End absurdos (horas de outro dia ou muito fora do planejado)
+    schedule=buildSchedule();
+    Object.keys(breakStart).forEach(i=>{
+      const row=schedule[parseInt(i)];
+      if(row && Math.abs(breakStart[i]-row.bStart_plan)>90*60000){
+        delete breakStart[i]; delete breakEnd[i];
+      }
+    });
+    schedule=buildSchedule();
 
-    // retoma na fase correta
-    if(fase==='work'){
-      iniciarContadorTrabalho();
-      toast('🔄 Retomando bloco de trabalho.',3000);
-    } else if(fase==='break'){
-      iniciarContadorIntervalo();
-      toast('🔄 Retomando intervalo.',3000);
-    } else if(fase==='done'){
-      toast('✅ Jornada concluída.',3000);
-    }
+    if(fase==='work'){ iniciarContadorTrabalho(); toast('🔄 Retomando bloco de trabalho.',3000); }
+    else if(fase==='break'){ iniciarContadorIntervalo(); toast('🔄 Retomando intervalo.',3000); }
+    else if(fase==='done'){ toast('✅ Jornada concluída.',3000); }
   }
 };
 </script>
